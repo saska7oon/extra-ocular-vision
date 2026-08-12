@@ -20,12 +20,14 @@ import { Phase0Dashboard } from './components/Phase0Dashboard';
 import { AccuracyDashboard } from './components/AccuracyDashboard';
 import { SensoryProfile } from './components/SensoryProfile';
 import { PhaseGym, PHASE_TITLES } from './components/PhaseGym';
+import { FreeResponseSession } from './components/FreeResponseSession';
+import { BUILTIN_CATEGORIES } from './features/judging/templates';
 import { BreathingGuide } from './components/BreathingGuide';
 import { BinauralPlayer } from './components/BinauralPlayer';
 import { CombinedSession } from './components/CombinedSession';
 import type { Phase0SessionRecord, Phase0SessionType } from './features/phase0/types';
 
-type View = 'home' | 'session' | 'stats' | 'journal' | 'phases' | 'phase';
+type View = 'home' | 'session' | 'stats' | 'journal' | 'phases' | 'phase' | 'free';
 
 /**
  * Map a Phase 0 day (1-7) to its session type, matching
@@ -48,6 +50,7 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
   const [runningDay, setRunningDay] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedPhase, setSelectedPhase] = useState<1 | 2 | 3 | 4>(1);
+  const [freeCategory, setFreeCategory] = useState<string | null>(null);
 
   // Determine the current absolute day (the first "available" day; fallback 1).
   useEffect(() => {
@@ -211,6 +214,18 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
                 </Button>
               </Card>
             ))}
+            <Card asArticle className="phase-card" interactive>
+              <h3>Phase 5: Complex Targets</h3>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setFreeCategory(null);
+                  setView('free');
+                }}
+              >
+                Enter
+              </Button>
+            </Card>
           </div>
         </section>
       )}
@@ -221,6 +236,34 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
           phaseId={selectedPhase}
           dayInPhase={1}
           absoluteDay={absoluteDay}
+        />
+      )}
+
+      {view === 'free' && !freeCategory && (
+        <section className="phase-selector" aria-label="Choose a complex-target category">
+          <h2>Phase 5: Complex Targets</h2>
+          <p>
+            Pick a target family. You will perceive a hidden member of the set,
+            describe it before reveal, and get a transparent similarity score.
+          </p>
+          <div className="phase-grid" role="list">
+            {BUILTIN_CATEGORIES.map((c) => (
+              <Card asArticle key={c} className="phase-card" interactive>
+                <h3>{c.replace(/-/g, ' ')}</h3>
+                <Button variant="primary" onClick={() => setFreeCategory(c)}>
+                  Enter
+                </Button>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {view === 'free' && freeCategory && (
+        <FreeResponseSession
+          key={freeCategory}
+          category={freeCategory}
+          onComplete={() => setFreeCategory(null)}
         />
       )}
 
