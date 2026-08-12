@@ -1,19 +1,32 @@
-# Extra-Ocular Vision Training App
+# React + TypeScript + Vite
 
-A local-first application for training extra-ocular vision (mindsight) perception skills.
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
-## Overview
-This application teaches "seeing without eyes" through a structured, progressive curriculum distilled from real-world programs (Mindsight Journey, Vision Without Eyes, MindSee, Vibravision, Blindfold Lab, and more). All data stays local — no cloud, no accounts, no telemetry.
+Currently, two official plugins are available:
 
-## Project Structure
-- `app/` — Main application code
-- `src/curriculum/` — Progressive training phases
-- `src/exercises/` — Individual perception exercises
-- `src/controls/` — Rigor controls (blindfold, crypto locking, integrity)
-- `src/judging/` — Programmatic scoring for free-response exercises
-- `src/ui/` — User interface
-- `tests/` — Verification of controls and scoring
-- `docs/` — Specifications
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Getting Started
-See the spec: `docs/extra-ocular-vision-app-spec.md`
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the Oxlint configuration
+
+If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+
+```json
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  }
+}
+```
+
+See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.

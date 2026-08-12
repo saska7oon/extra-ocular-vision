@@ -1,0 +1,79 @@
+/*
+ * Theme definitions for Extra-Ocular Vision.
+ *
+ * Two themes (light, dark) for blindfolded use. The dark theme uses very low
+ * luminance (near-black) so the app doesn't interfere with dark-adapted
+ * vision during closed-eye sessions.
+ *
+ * Applied via data-theme attribute on <html>:
+ *   document.documentElement.setAttribute('data-theme', 'dark')
+ *
+ * CSS custom properties are consumed throughout the app.
+ */
+
+/* --- Shared tokens --- */
+:root {
+  /* Spacing scale */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.25rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 2.75rem;
+  --space-3xl: 3.5rem;
+
+  /* Border radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-full: 9999px;
+
+  /* Focus ring (shared across themes for keyboard accessibility) */
+  --focus-ring-width: 0.25rem;
+  --focus-ring-offset: 0.125rem;
+}
+
+/* --- Light theme --- */
+:root[data-theme='light'] {
+  --color-bg: 255 255 255;
+  --color-bg-alt: 248 249 250;
+  --color-bg-elevated: 241 242 244;
+  --color-text: 17 17 17;
+  --color-text-secondary: 82 82 82;
+  --color-border: 217 217 228;
+  --color-accent: 37 99 235;
+  --color-accent-hover: 29 78 216;
+  --color-accent-contrast: 255 255 255;
+  --color-error: 220 38 38;
+  --color-warning: 217 119 0;
+  --color-success: 22 163 70;
+  --color-blind-safe: 1;
+}
+
+/* --- Dark theme (for blindfolded use) --- */
+:root[data-theme='dark'] {
+  --color-bg: 13 13 21;
+  --color-bg-alt: 18 18 26;
+  --color-bg-elevated: 22 22 32;
+  --color-text: 227 227 237;
+  --color-text-secondary: 160 160 176;
+  --color-border: 48 48 64;
+  --color-accent: 96 165 250;
+  --color-accent-hover: 144 193 255;
+  --color-accent-contrast: 13 13 21;
+  --color-error: 248 113 113;
+  --color-warning: 251 146 60;
+  --color-success: 74 222 128;
+  --color-blind-safe: 1;
+}
+
+/* --- High contrast overrides (accessibility mode) --- */
+:root[data-theme='dark'][data-a11y='high-contrast'] {
+  --color-bg: 0 0 0;
+  --color-text: 255 255 255;
+  --color-accent: 255 255 0;
+  --color-accent-contrast: 0 0 0;
+  --color-border: 255 255 255;
+}

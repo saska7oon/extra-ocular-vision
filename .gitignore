@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.local/
+!dist/stats.html
+stats.html
+.vscode/
+.idea/
+.DS_Store
+*.log
+npm-debug.log*
+coverage/
+.vitest-cache/
+.eslintcache
+.turbo/
