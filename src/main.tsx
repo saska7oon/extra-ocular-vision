@@ -4,10 +4,13 @@ import './index.css';
 import App from './App';
 
 // Register the PWA service worker for offline-first operation.
-// @ts-expect-error — vite-plugin-pwa injects this virtual module
-import { registerSW } from 'virtual:pwa/register';
-
-registerSW();
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((err) => {
+      console.error('Service worker registration failed:', err);
+    });
+  });
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -2,9 +2,9 @@
  * Base styles and CSS reset for Extra-Ocular Vision.
  */
 
-@import './themes.css';
-@import './a11y.css';
-@import './base.css';
+@import './styles/themes.css';
+@import './styles/a11y.css';
+@import './styles/base.css';
 
 :root {
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',

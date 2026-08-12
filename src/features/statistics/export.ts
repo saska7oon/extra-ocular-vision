@@ -11,12 +11,8 @@
  * OR return the raw string for server-side consumption.
  */
 
-import type { Session, ExerciseRound } from '../../types';
-import type {
-  ProfileAnalytics,
-  SessionAnalytics,
-  ChanceComparison,
-} from '../statistics/types';
+import type { Session } from '../../types';
+import type { ProfileAnalytics } from '../statistics/types';
 import { formatAccuracy, formatPValue } from '../statistics/analytics';
 
 /* =======================================================================
@@ -71,15 +67,10 @@ export function exportSessionAccuracyCSV(sessions: Session[]): string {
     const correct = rounds.filter((r) => r.correct === true).length;
     const ratio = total > 0 ? correct / total : 0;
     // Compute chance rate
-    let totalChoices = 0;
-    let choiceCount = 0;
-    for (const r of rounds) {
+    for (const _r of rounds) {
       // We'd need EXERCISE_CHOICES but importing it here is fine
-      totalChoices += 2; // simplified
-      choiceCount++;
     }
-    const choicesPerRound = choiceCount > 0 ? totalChoices / choiceCount : 1;
-    const chanceRate = choicesPerRound > 0 ? 1 / choicesPerRound : 0.5;
+    const choicesPerRound = 2;
 
     lines.push(
       [
@@ -302,7 +293,6 @@ export function downloadHTML(content: string, filename: string): void {
   a.download = filename;
   document.body.appendChild(a);
   a.click();
-  URL.reorderObjectURL;
   URL.revokeObjectURL(url);
   document.body.removeChild(a);
 }
@@ -359,8 +349,10 @@ export function generateTargets(analytics: ProfileAnalytics | null): TargetEntry
   }
 
   // Sort by priority
-  const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
-  targets.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  const priorityOrder = { high: 0, medium: 1, low: 2 } as const;
+  targets.sort(
+    (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority],
+  );
 
   return targets;
 }

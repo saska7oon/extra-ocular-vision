@@ -151,6 +151,7 @@ export function useCreateProfile(): MutationResult<UserProfile> & {
         });
         if (isFirst) {
           await repos.settings.setActiveProfileId(record.id);
+          await repos.settings.update({ firstLaunchComplete: true });
         }
         setData(record);
         return record;

@@ -15,7 +15,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useAppSettings, useTheme, useCreateProfile } from './hooks';
 
 function App() {
-  const { settings, isLoading } = useAppSettings();
+  const { settings, isLoading, refresh: refreshSettings } = useAppSettings();
   const { resolvedTheme } = useTheme();
   const [, setPwaInstalled] = useState(false);
 
@@ -67,7 +67,11 @@ function App() {
           tabIndex={-1}
           aria-label="Main content"
         >
-          {settings?.firstLaunchComplete ? <AppReady /> : <FirstLaunchFlow />}
+          {settings?.firstLaunchComplete ? (
+            <AppReady />
+          ) : (
+            <FirstLaunchFlow onProfileCreated={refreshSettings} />
+          )}
         </main>
 
         <footer className="app-footer" role="contentinfo">
@@ -83,7 +87,11 @@ function App() {
 }
 
 /** First-launch onboarding: create a profile, set preferences. */
-function FirstLaunchFlow() {
+function FirstLaunchFlow({
+  onProfileCreated,
+}: {
+  onProfileCreated: () => Promise<void>;
+}) {
   return (
     <section aria-labelledby="first-launch-title">
       <h2 id="first-launch-title">Welcome to Extra-Ocular Vision Training</h2>
@@ -96,13 +104,17 @@ function FirstLaunchFlow() {
         Please create a profile to begin. You can add multiple profiles for
         family members or personal comparison.
       </p>
-      <ProfileCreationForm />
+      <ProfileCreationForm onProfileCreated={onProfileCreated} />
     </section>
   );
 }
 
 /** Simple profile creation form shown on first launch. */
-function ProfileCreationForm() {
+function ProfileCreationForm({
+  onProfileCreated,
+}: {
+  onProfileCreated: () => Promise<void>;
+}) {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
   const { create } = useCreateProfile();
@@ -113,7 +125,9 @@ function ProfileCreationForm() {
     const result = await create(name || 'Default');
     if (!result) {
       setError('Failed to create profile. Check browser console for details.');
+      return;
     }
+    await onProfileCreated();
   };
 
   return (

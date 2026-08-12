@@ -21,12 +21,14 @@ declare const self: ServiceWorkerGlobalScope;
 // The precache manifest is injected by Workbox at build time.
 declare const __WB_MANIFEST: Array<{ url: string; revision: string | null }>;
 
+export const MANIFEST = self.__WB_MANIFEST;
+
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
 
 // Precache all bundled assets for offline-first operation.
-precacheAndRoute(__WB_MANIFEST);
+precacheAndRoute(MANIFEST);
 cleanupOutdatedCaches();
 
 // Helper: extract requestDestination with a type cast (Workbox types

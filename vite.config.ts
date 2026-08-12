@@ -33,8 +33,12 @@ export default defineConfig(({ mode }) => {
       srcDir: 'src',
       filename: 'sw.js',
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
+      injectRegister: false,
       strategies: 'injectManifest',
+      injectManifest: {
+        swSrc: 'src/sw.ts',
+        swDest: 'dist/sw.js',
+      },
       srcDirClean: false,
       workbox: {
         runtimeCaching: [
