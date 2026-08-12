@@ -226,6 +226,18 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
                 Enter
               </Button>
             </Card>
+            <Card asArticle className="phase-card" interactive>
+              <h3>Phase 6: Environmental Mapping</h3>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setFreeCategory('environmental-mapping');
+                  setView('free');
+                }}
+              >
+                Enter
+              </Button>
+            </Card>
           </div>
         </section>
       )}

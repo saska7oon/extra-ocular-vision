@@ -12,6 +12,7 @@
  *   - 'animals'       : high-contrast silhouettes
  */
 import type { TemplateEntry } from '../../types';
+import { ENV_TEMPLATES } from './envTemplates';
 
 function t(
   id: string,
@@ -72,7 +73,16 @@ export const BUILTIN_CATEGORIES: readonly string[] = [
   'animals',
 ];
 
-/** Pick built-in templates for a given category. */
+/**
+ * Pick built-in templates for a given category. Includes both the Phase 5
+ * object/card/animal templates and the Phase 6 environmental-mapping set
+ * (which share the judge but model spatial layout facets).
+ */
 export function templatesForCategory(category: string): TemplateEntry[] {
-  return BUILTIN_TEMPLATES.filter((t) => t.category === category);
+  const primary = BUILTIN_TEMPLATES.filter((t) => t.category === category);
+  if (primary.length > 0) return primary;
+  if (category === 'environmental-mapping') {
+    return [...ENV_TEMPLATES];
+  }
+  return [];
 }

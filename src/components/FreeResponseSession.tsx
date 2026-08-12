@@ -97,6 +97,17 @@ export function FreeResponseSession({
     void newRound();
   };
 
+  const isEnv = category === 'environmental-mapping';
+  const phaseName = isEnv
+    ? 'Phase 6: Environmental Mapping'
+    : 'Phase 5: Complex Targets';
+  const blindLabel = isEnv
+    ? 'Perceive the spatial layout (objects and their positions), then describe it.'
+    : 'Perceive the hidden object, then describe it in your own words.';
+  const placeholder = isEnv
+    ? 'e.g. a chair on the left, close…'
+    : 'e.g. a red round fruit with a leaf…';
+
   // --- Done summary ---
   if (done) {
     return (
@@ -122,11 +133,11 @@ export function FreeResponseSession({
   if (!lock) {
     return (
       <Card asArticle className="fr-session">
-        <h2>Phase 5: Complex Targets — {category}</h2>
+        <h2>{phaseName} — {category}</h2>
         <p>
-          You will perceive a hidden target (e.g. a playing card or object).
-          Before it is revealed, type a description of what you sense. The
-          judge scores how well your words match, before showing the answer.
+          {isEnv
+            ? 'You will perceive a presented spatial layout — objects and their positions (left/right, near/far). Before it is revealed, describe what you sense. This is a seated perception exercise only; no movement or navigation is involved.'
+            : 'You will perceive a hidden target (e.g. a playing card or object). Before it is revealed, type a description of what you sense. The judge scores how well your words match, before showing the answer.'}
         </p>
         <Button variant="primary" onClick={() => void newRound()}>
           Begin
@@ -142,7 +153,7 @@ export function FreeResponseSession({
   return (
     <Card asArticle className="fr-session">
       <header className="fc-header">
-        <h2>Complex Target — {category}</h2>
+        <h2>{isEnv ? 'Spatial layout' : 'Complex Target'} — {category}</h2>
         <span className="fc-progress">Round {roundIndex + 1} / 8</span>
       </header>
 
@@ -150,8 +161,7 @@ export function FreeResponseSession({
       <div className="fc-blind" aria-label="Perceive the hidden target">
         <div className="blind-disc" aria-hidden="true" />
         <p className="fc-blind-hint">
-          {showCommit &&
-            'Perceive the hidden object, then describe it in your own words.'}
+          {showCommit && blindLabel}
           {showResult && 'Description committed — review your score, then reveal.'}
           {showReveal && `The hidden target was: ${lock.target.label}`}
         </p>
@@ -166,7 +176,7 @@ export function FreeResponseSession({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            placeholder="e.g. a red round fruit with a leaf…"
+            placeholder={placeholder}
           />
           <div className="fc-actions">
             <Button
