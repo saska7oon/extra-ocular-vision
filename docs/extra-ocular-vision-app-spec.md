@@ -364,11 +364,11 @@ Features:
 - Local-first: PWA service worker + IndexedDB for offline operation after initial load
 - Target: Web browser (cross-platform) + mobile PWA
 
-**Audio strategy**: Binaural beats are delivered via an external binaural beats app (user's preferred app, rather than bundled audio assets). The main app provides:
-- Breathing timer with simple audio cues (beep tones for inhale/hold/exhale)
-- Guided voice instructions (recorded speech, low bundle impact)
-- The user runs their binaural beats app concurrently during preparation phase
-- Rationale: User already has a dedicated binaural beats app with verified audio precision; bundling beats in this app would add bundle size without benefit, and Web Audio API timing can vary by device
+**Audio strategy**: The app generates its own binaural beats via Web Audio API in real time (a single shared engine owned and built once), plus breathing-guide audio cues and guided voice instructions (SpeechSynthesis). This matches the architecture of Mindsight Journey and MindSee (apps that ship their own binaural beats). The engine is a reusable shared module (`src/audio/BinauralPlayer`) consumed by every phase's preparation step — never duplicated per-phase.
+- Binaural beats: Web Audio API real-time generation (stereo panning, 150 Hz carrier + difference tone for alpha/theta/gamma), headphone detection/warning, per-track volume, test button
+- Breathing timer: simple audio cues (beep tones / heartbeat at 60 BPM) for inhale/hold/exhale
+- Guided voice instructions: SpeechSynthesis (offline, no bundled audio files needed)
+- Rationale: single shared engine avoids duplicate players across tasks; real-time Web Audio generation keeps bundle small and frequencies precise vs. bundling long audio files
 
 **Storage**: IndexedDB via Dexie.js
 - Entirely local, no cloud sync, no telemetry
@@ -379,7 +379,7 @@ Features:
 - Navigation possible entirely by keyboard/screen reader
 
 ## Constraints
-- Must not require paid hardware (recommend blindfolds/gloves but make them optional; binaural beats via user's existing app)
+- Must not require paid hardware (recommend blindfolds/gloves but make them optional; binaural beats generated in-app via Web Audio API)
 - Must store ALL data locally (privacy-first, no telemetry, no cloud sync)
 - Must run on web browsers (cross-platform) and mobile
 - Must include clear disclaimers that this is training for a claimed ability, not proven science
