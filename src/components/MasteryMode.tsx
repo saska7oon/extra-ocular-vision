@@ -16,9 +16,10 @@ import type { ReactElement } from 'react';
 import { Card } from '../ui';
 import { useDatabase } from '../hooks';
 import { chanceRateForExercise, binomialPValue, formatAccuracy } from '../features/statistics/analytics';
-import { choiceCountFor } from '../features/exercises';
+import { choiceCountFor, FORCED_CHOICE_CONFIGS } from '../features/exercises';
 import { FreeResponseSession } from './FreeResponseSession';
-import type { Session } from '../types';
+import { ForcedChoiceSession } from './ForcedChoiceSession';
+import type { Session, ExerciseType } from '../types';
 
 interface MasteryRow {
   exerciseType: string;
@@ -47,7 +48,10 @@ export function MasteryMode({ profileId }: MasteryModeProps): ReactElement {
   const repos = useDatabase();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [practiceCategory, setPracticeCategory] = useState<string | null>(null);
+  // Practice target: either a free-response category or a forced-choice config.
+  const [practice, setPractice] = useState<
+    { kind: 'free'; category: string } | { kind: 'forced'; exercise: ExerciseType } | null
+  >(null);
 
   useEffect(() => {
     const load = async () => {
@@ -111,23 +115,43 @@ export function MasteryMode({ profileId }: MasteryModeProps): ReactElement {
     return out.sort((a, b) => a.pValue - b.pValue);
   }, [sessions]);
 
-  // Continue a practice session for a growth category.
-  const continueCategory = (type: string) => {
-    const c = Object.keys(CATEGORY_TO_EXERCISE).find(
+  // Continue a practice session for a growth exercise type.
+  const continuePractice = (type: string) => {
+    const cat = Object.keys(CATEGORY_TO_EXERCISE).find(
       (k) => CATEGORY_TO_EXERCISE[k] === type,
     );
-    if (c) {
-      setPracticeCategory(c);
+    if (cat) {
+      setPractice({ kind: 'free', category: cat });
+      return;
+    }
+    // Otherwise, it's a forced-choice exercise we can drill directly.
+    const cfg = FORCED_CHOICE_CONFIGS[type as Extract<ExerciseType, 'contrast'|'color'|'shape'|'symbol'|'text-reading'>];
+    if (cfg) {
+      setPractice({ kind: 'forced', exercise: cfg.exerciseType });
     }
   };
 
-  if (practiceCategory) {
+  // Render a fresh practice session (free-response or forced-choice).
+  if (practice) {
     return (
       <section className="mastery-practice">
-        <FreeResponseSession
-          category={practiceCategory}
-          onComplete={() => setPracticeCategory(null)}
-        />
+        <button className="btn btn--ghost" onClick={() => setPractice(null)}>
+          ← Back to mastery
+        </button>
+        {practice.kind === 'free' ? (
+          <FreeResponseSession
+            category={practice.category}
+            onComplete={() => setPractice(null)}
+          />
+        ) : (
+          <ForcedChoiceSession
+            config={FORCED_CHOICE_CONFIGS[practice.exercise as Extract<ExerciseType, 'contrast'|'color'|'shape'|'symbol'|'text-reading'>]}
+            profileId={profileId}
+            absoluteDay={Math.max(1, Math.min(...sessions.map((s) => s.absoluteDay), 9999))}
+            dayInPhase={1}
+            onSessionComplete={() => setPractice(null)}
+          />
+        )}
       </section>
     );
   }
@@ -172,7 +196,7 @@ export function MasteryMode({ profileId }: MasteryModeProps): ReactElement {
                 <td>{r.verdict}</td>
                 <td>
                   {r.recommended && (
-                    <button onClick={() => continueCategory(r.exerciseType)}>
+                    <button onClick={() => continuePractice(r.exerciseType)}>
                       Practice more
                     </button>
                   )}

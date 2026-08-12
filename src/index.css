@@ -144,3 +144,14 @@ body {
   border: 1px solid var(--border); background: rgb(var(--color-bg));
   cursor: pointer;
 }
+
+/* Difficulty tier selector (PhaseGym) */
+.tier-selector { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.tier-label { opacity: 0.75; font-size: 0.9rem; }
+.tier-btn {
+  padding: 0.35rem 0.7rem; border-radius: 0.4rem;
+  border: 1px solid var(--border); background: rgb(var(--color-bg));
+  cursor: pointer; font-size: 0.85rem;
+}
+.tier-btn.is-active { border-color: var(--color-accent); box-shadow: 0 0 0 2px var(--color-accent); }
+.tier-btn:disabled { cursor: default; }

@@ -27,10 +27,12 @@ import type {
 import {
   generateLockedTargets,
   randomSeed,
+  createPRNG,
   verifyCommitment,
   type Commitment,
 } from '../../utils/crypto';
 import { EXERCISE_CHOICES } from '../statistics/analytics';
+import { choicesAtTier } from '../difficulty/tiers';
 
 /* ==========================================================================
  * Phase configuration
@@ -220,6 +222,7 @@ export class ForcedChoiceEngine {
   private _rounds: ExerciseRound[] = [];
   private _state: EngineState = { kind: 'idle' };
   private _cursor = 0;
+  private _choices: ForcedChoiceOption[] = [];
 
   constructor(
     private readonly cfg: ForcedChoiceConfig,
@@ -252,24 +255,48 @@ export class ForcedChoiceEngine {
     const labels = this.cfg.options.map((o) => o.label);
     const targetCount = this.cfg.roundsPerSession;
     const locked = await generateLockedTargets(seed, labels, targetCount);
-    const choices = this.cfg.options.slice(0, this.cfg.choicesPerRound);
-    this._locked = locked.map((l) => {
+    // Choice count scales with the difficulty tier (fewer = easier).
+    const choiceCount = choicesAtTier(
+      this.opts.difficulty,
+      this.cfg.choicesPerRound,
+      this.cfg.options.length,
+    );
+    // Deterministic PRNG (same seed) to draw distractors.
+    const rand = createPRNG(seed + ':distractors');
+    this._choices = [];
+    this._locked = locked.map((l, i) => {
       const opt = this.cfg.options.find((o) => o.label === l.target)!;
+      // Always include the correct target; fill remaining slots with distinct
+      // distractors so the user can actually get the round right.
+      const others = this.cfg.options.filter((o) => o.key !== opt.key);
+      const pool = [...others];
+      const picks: ForcedChoiceOption[] = [opt];
+      const want = Math.max(1, Math.min(choiceCount, this.cfg.options.length));
+      while (picks.length < want && pool.length > 0) {
+        const idx = Math.floor(rand() * pool.length);
+        picks.push(pool.splice(idx, 1)[0]!);
+      }
+      // Shuffle so the correct answer is not always first.
+      const shuffled = [...picks].sort(() => rand() - 0.5);
+      this._choices = shuffled;
       return {
-        roundIndex: l.roundIndex,
+        roundIndex: i,
         targetKey: opt.key,
         commitment: l.commitment,
-        choices,
+        choices: shuffled,
       };
     });
     this._cursor = 0;
     this._state = { kind: 'presenting', round: 1 };
   }
 
-  /** The choices for the current round. */
+  /**
+   * The choices for the current round (always includes the correct target
+   * plus tier-scaled distractors).
+   */
   get currentChoices(): ForcedChoiceOption[] {
     const locked = this._locked[this._cursor];
-    return locked ? locked.choices : [];
+    return locked ? locked.choices : this._choices;
   }
 
   /**

@@ -13,7 +13,8 @@ import { useDatabase } from '../hooks';
 import { ForcedChoiceSession } from './ForcedChoiceSession';
 import type { ForcedChoiceConfig } from '../features/exercises';
 import { choiceCountFor, configForPhase } from '../features/exercises';
-import type { Session } from '../types';
+import type { Session, DifficultyTier } from '../types';
+import { TIER_ORDER, TIER_LABELS } from '../features/difficulty/tiers';
 
 interface PhaseGymProps {
   profileId: string;
@@ -44,6 +45,7 @@ export function PhaseGym({
   const available =
     drills ?? [configForPhase(phaseId as 1 | 2 | 3 | 4)];
   const [activeCfg, setActiveCfg] = useState<ForcedChoiceConfig | null>(null);
+  const [tier, setTier] = useState<DifficultyTier>('beginner');
 
   const configs = useMemo(
     () => available.filter((c) => c.phaseId === phaseId),
@@ -71,12 +73,29 @@ export function PhaseGym({
         </p>
       </header>
 
+      {/* Difficulty tier selector */}
+      <div className="tier-selector" role="group" aria-label="Difficulty tier">
+        <span className="tier-label">Difficulty:</span>
+        {TIER_ORDER.map((t) => (
+          <button
+            key={t}
+            type="button"
+            className={`tier-btn${tier === t ? ' is-active' : ''}`}
+            onClick={() => setTier(t)}
+            disabled={activeCfg !== null}
+          >
+            {TIER_LABELS[t]}
+          </button>
+        ))}
+      </div>
+
       {activeCfg ? (
         <ForcedChoiceSession
           config={activeCfg}
           profileId={profileId}
           absoluteDay={absoluteDay}
           dayInPhase={dayInPhase}
+          difficulty={tier}
           onSessionComplete={(s) => {
             void persistSession(s);
             setActiveCfg(null);

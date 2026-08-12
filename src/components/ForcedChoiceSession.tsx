@@ -18,13 +18,15 @@ import { clsx } from '../utils/clsx';
 import { Button, Card } from '../ui';
 import type { ForcedChoiceConfig } from '../features/exercises';
 import { ForcedChoiceEngine } from '../features/exercises';
-import type { Session, ExerciseRound } from '../types';
+import type { Session, ExerciseRound, DifficultyTier } from '../types';
 
 interface ForcedChoiceSessionProps {
   config: ForcedChoiceConfig;
   profileId: string;
   absoluteDay: number;
   dayInPhase: number;
+  /** Difficulty tier; scales the choice set (more distractors = harder). */
+  difficulty?: DifficultyTier;
   /** Called with the built session record when complete. */
   onSessionComplete?: (session: Session) => void;
 }
@@ -35,6 +37,7 @@ export function ForcedChoiceSession({
   absoluteDay,
   dayInPhase,
   onSessionComplete,
+  difficulty = 'beginner',
 }: ForcedChoiceSessionProps): ReactElement {
   const sessionId = useMemo(() => crypto.randomUUID(), []);
   const engineRef = useRef<ForcedChoiceEngine | null>(null);
@@ -65,7 +68,7 @@ export function ForcedChoiceSession({
         sessionId,
         absoluteDay,
         dayInPhase,
-        difficulty: 'beginner',
+        difficulty,
       });
     }
     return engineRef.current;
@@ -113,7 +116,7 @@ export function ForcedChoiceSession({
         phaseId: config.phaseId,
         dayInPhase,
         absoluteDay,
-        difficulty: 'beginner',
+        difficulty,
         rounds: result.rounds,
         startedAt: Date.now(),
         endedAt: Date.now(),
