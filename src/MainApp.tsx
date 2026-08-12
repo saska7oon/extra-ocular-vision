@@ -1,0 +1,224 @@
+/**
+ * MainApp — the wired post-launch experience for Extra-Ocular Vision.
+ *
+ * After profile creation, this renders a small view router:
+ *   - Home        : Phase 0 dashboard (day-by-day progress grid)
+ *   - Session     : the actual training session (launches the real
+ *                   BreathingGuide / BinauralPlayer / CombinedSession component
+ *                   for the current day, NOT a simulated stub)
+ *   - Statistics  : accuracy / chance / sensory-profile analytics
+ *   - Journal     : training reflection log
+ *
+ * Session completion is persisted through the Phase0Repository (IndexedDB),
+ * and day completion is marked so the dashboard progress advances.
+ */
+import { useCallback, useEffect, useState } from 'react';
+import type { ReactElement } from 'react';
+import { useDatabase } from './hooks';
+import { Button, Card } from './ui';
+import { Phase0Dashboard } from './components/Phase0Dashboard';
+import { AccuracyDashboard } from './components/AccuracyDashboard';
+import { SensoryProfile } from './components/SensoryProfile';
+import { BreathingGuide } from './components/BreathingGuide';
+import { BinauralPlayer } from './components/BinauralPlayer';
+import { CombinedSession } from './components/CombinedSession';
+import type { Phase0SessionRecord, Phase0SessionType } from './features/phase0/types';
+
+type View = 'home' | 'session' | 'stats' | 'journal';
+
+/**
+ * Map a Phase 0 day (1-7) to its session type, matching
+ * Phase0SessionCard.sessionTypeForDay.
+ */
+function sessionTypeForDay(day: number): Phase0SessionType {
+  if (day <= 3) return 'breathing';
+  if (day <= 5) return 'binaural';
+  return 'combined';
+}
+
+interface MainAppProps {
+  profileId: string;
+}
+
+export function MainApp({ profileId }: MainAppProps): ReactElement {
+  const repos = useDatabase();
+  const [view, setView] = useState<View>('home');
+  const [absoluteDay, setAbsoluteDay] = useState(1);
+  const [runningDay, setRunningDay] = useState<number | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Determine the current absolute day (the first "available" day; fallback 1).
+  useEffect(() => {
+    const load = async () => {
+      if (!repos) return;
+      try {
+        const s = await repos.phase0.getProgressSummary(profileId);
+        const dayIdx = s.days.findIndex((d) => d === 'available');
+        if (dayIdx >= 0) setAbsoluteDay(dayIdx + 1);
+        else if (s.completedDays > 0) setAbsoluteDay(s.completedDays);
+      } catch {
+        // ignore — default to day 1
+      }
+    };
+    void load();
+  }, [repos, profileId, refreshKey]);
+
+  /** Persist a completed session record and bump the dashboard. */
+  const handleSessionComplete = useCallback(
+    async (record: unknown) => {
+      if (!repos || !record) return;
+      const rec = record as Phase0SessionRecord;
+      try {
+        await repos.phase0.createSession(rec);
+        // Mark the day complete if the session finished.
+        if (rec.completed) {
+          await repos.phase0.setDayCompletion(profileId, rec.absoluteDay);
+        }
+      } catch (err) {
+        console.error('Failed to persist session:', err);
+      } finally {
+        setRunningDay(null);
+        setRefreshKey((k) => k + 1);
+      }
+    },
+    [repos, profileId],
+  );
+
+  /** Begin a session for the given day. */
+  const startSession = (day: number) => {
+    setRunningDay(day);
+    setView('session');
+  };
+
+  /** Journal text for the active training day. */
+  const [journalText, setJournalText] = useState('');
+  const [journalSaved, setJournalSaved] = useState(false);
+
+  const saveJournal = useCallback(async () => {
+    if (!repos || !journalText.trim()) return;
+    try {
+      await repos.journal.create({
+        profileId,
+        title: `Day ${absoluteDay}`,
+        content: journalText.trim(),
+        tags: ['phase0'],
+      });
+      setJournalSaved(true);
+    } catch (err) {
+      console.error('Failed to save journal:', err);
+    }
+  }, [repos, journalText, absoluteDay, profileId]);
+
+  // ---- View router ----
+  if (view === 'session' && runningDay !== null) {
+    const day = runningDay;
+    const type = sessionTypeForDay(day);
+    return (
+      <section className="session-view" aria-labelledby="session-title">
+        <header className="session-view-header">
+          <Button variant="outline" onClick={() => setView('home')}>
+            ← Back to dashboard
+          </Button>
+          <h2 id="session-title">Day {day} — Session</h2>
+        </header>
+
+        {type === 'breathing' && (
+          <BreathingGuide
+            profileId={profileId}
+            absoluteDay={absoluteDay}
+            onSessionComplete={handleSessionComplete}
+          />
+        )}
+        {type === 'binaural' && (
+          <BinauralPlayer
+            profileId={profileId}
+            absoluteDay={absoluteDay}
+            onSessionComplete={handleSessionComplete}
+          />
+        )}
+        {type === 'combined' && (
+          <CombinedSession
+            profileId={profileId}
+            absoluteDay={absoluteDay}
+            onSessionComplete={handleSessionComplete}
+          />
+        )}
+      </section>
+    );
+  }
+
+  return (
+    <section className="main-app" aria-label="Main application">
+      {/* Top nav */}
+      <nav className="app-nav" aria-label="Main navigation">
+        <Button
+          variant={view === 'home' ? 'primary' : 'outline'}
+          onClick={() => setView('home')}
+        >
+          Home
+        </Button>
+        <Button
+          variant={view === 'stats' ? 'primary' : 'outline'}
+          onClick={() => setView('stats')}
+        >
+          Statistics
+        </Button>
+        <Button
+          variant={view === 'journal' ? 'primary' : 'outline'}
+          onClick={() => setView('journal')}
+        >
+          Journal
+        </Button>
+      </nav>
+
+      {view === 'home' && (
+        <Phase0Dashboard
+          profileId={profileId}
+          absoluteDay={absoluteDay}
+          onStartSession={startSession}
+          refreshKey={refreshKey}
+        />
+      )}
+
+      {view === 'stats' && (
+        <div className="stats-views">
+          <AccuracyDashboard profileId={profileId} />
+          <SensoryProfile profileId={profileId} />
+        </div>
+      )}
+
+      {view === 'journal' && (
+        <Card asArticle className="journal-view">
+          <h2>Training Journal</h2>
+          <p>
+            Reflect on today's session — what you sensed, what state you were
+            in, anything that stood out.
+          </p>
+          <label htmlFor="journal-input">Today's reflection</label>
+          <textarea
+            id="journal-input"
+            value={journalText}
+            onChange={(e) => {
+              setJournalText(e.target.value);
+              setJournalSaved(false);
+            }}
+            rows={6}
+            placeholder="e.g. During the breathing, I noticed a warm sensation behind my eyes…"
+          />
+          <div className="journal-actions">
+            <Button
+              variant="primary"
+              onClick={() => void saveJournal()}
+              disabled={!journalText.trim()}
+            >
+              Save entry
+            </Button>
+            {journalSaved && <span role="status">Saved ✓</span>}
+          </div>
+        </Card>
+      )}
+    </section>
+  );
+}
+
+export default MainApp;

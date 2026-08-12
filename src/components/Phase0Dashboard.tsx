@@ -24,10 +24,14 @@ interface Phase0DashboardProps {
   profileId: string;
   /** Absolute day number (1-based) from app start. */
   absoluteDay: number;
+  /** Called when the user wants to start a session for a given day. */
+  onStartSession?: (day: number) => void;
+  /** Bump to force a reload of progress (e.g. after a session completes). */
+  refreshKey?: number;
 }
 
 /** Hook: load Phase 0 progress summary + recent sessions for a profile. */
-function usePhase0Progress(profileId: string) {
+function usePhase0Progress(profileId: string, refreshKey?: number) {
   const repos = useDatabase();
   const [summary, setSummary] = useState<Phase0ProgressSummary | null>(null);
   const [sessions, setSessions] = useState<Phase0SessionRecord[]>([]);
@@ -62,7 +66,7 @@ function usePhase0Progress(profileId: string) {
     return () => {
       cancelled = true;
     };
-  }, [repos, profileId]);
+  }, [repos, profileId, refreshKey]);
 
   return { summary, sessions, isLoading, error };
 }
@@ -151,8 +155,10 @@ function StateTrendSpark({
 export function Phase0Dashboard({
   profileId,
   absoluteDay,
+  onStartSession,
+  refreshKey,
 }: Phase0DashboardProps): ReactElement {
-  const { summary, sessions, isLoading, error } = usePhase0Progress(profileId);
+  const { summary, sessions, isLoading, error } = usePhase0Progress(profileId, refreshKey);
   const dayViews = buildDayViews(summary, sessions);
   const currentDayView = dayViews.find((d) => d.day === absoluteDay);
 
@@ -233,6 +239,7 @@ export function Phase0Dashboard({
             absoluteDay={absoluteDay}
             day={currentDayView.day}
             status={currentDayView.status}
+            {...(onStartSession ? { onStartSession } : {})}
             {...(currentDayView.latestSession
               ? { latestSession: currentDayView.latestSession }
               : {})}

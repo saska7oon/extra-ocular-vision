@@ -26,6 +26,8 @@ interface Phase0SessionCardProps {
   status: DayCompletion;
   /** Most recent session for this day, if any. */
   latestSession?: Phase0SessionRecord;
+  /** Called to actually launch the training session for this day. */
+  onStartSession?: (day: number) => void;
   /** Called after a session is created/saved. */
   onSaveSession?: (record: Phase0SessionRecord) => void;
 }
@@ -61,32 +63,33 @@ export function Phase0SessionCard({
   day,
   status,
   latestSession,
+  onStartSession,
   onSaveSession,
 }: Phase0SessionCardProps): ReactElement {
   const [isStarting, setIsStarting] = useState(false);
   const sessionType = sessionTypeForDay(day);
   const track = defaultTrackForDay(day);
 
-  // Placeholder: in a full implementation this would route to BreathingGuide /
-  // BinauralPlayer / CombinedSession via a modal or routed view. Here we
-  // provide a launcher button that the parent can wire up.
+  // Launch the real training session for this day via the parent router.
   const handleStart = async () => {
     setIsStarting(true);
     try {
-      // Simulate session creation. The actual session component would be
-      // launched via a modal/router in the parent; this stub emits a record
-      // so the parent can persist it.
-      const now = Date.now();
-      const record: Phase0SessionRecord = {
-        id: crypto.randomUUID(),
-        profileId,
-        sessionType,
-        absoluteDay,
-        startedAt: now,
-        completed: false,
-        ...(sessionType === 'binaural' ? { binauralTrackId: track } : {}),
-      };
-      onSaveSession?.(record);
+      if (onStartSession) {
+        onStartSession(day);
+      } else if (onSaveSession) {
+        // Fallback: emit a placeholder record for headless tests.
+        const now = Date.now();
+        const record: Phase0SessionRecord = {
+          id: crypto.randomUUID(),
+          profileId,
+          sessionType,
+          absoluteDay,
+          startedAt: now,
+          completed: false,
+          ...(sessionType === 'binaural' ? { binauralTrackId: track } : {}),
+        };
+        onSaveSession(record);
+      }
     } finally {
       setIsStarting(false);
     }

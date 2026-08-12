@@ -11,8 +11,9 @@
  * judging engine are separate feature components assembled here.
  */
 
-import { useEffect, useState, type FormEvent } from 'react';
-import { useAppSettings, useTheme, useCreateProfile } from './hooks';
+import { useEffect, useState, type FormEvent, type ReactElement } from 'react';
+import { useAppSettings, useTheme, useCreateProfile, useProfiles } from './hooks';
+import { MainApp } from './MainApp';
 
 function App() {
   const { settings, isLoading, refresh: refreshSettings } = useAppSettings();
@@ -162,31 +163,28 @@ function ProfileCreationForm({
   );
 }
 
-/** Placeholder for the main app once a profile exists. */
-function AppReady() {
-  return (
-    <section aria-labelledby="ready-title">
-      <h2 id="ready-title">Ready to train</h2>
-      <p>Your profile is set up. This is a scaffold — feature modules will be assembled here.</p>
-      <ul>
-        <li>
-          <a href="/?action=new-session" className="btn btn-outline">
-            Start New Session
-          </a>
-        </li>
-        <li>
-          <a href="/?view=stats" className="btn btn-outline">
-            Statistics Dashboard
-          </a>
-        </li>
-        <li>
-          <a href="/?view=journal" className="btn btn-outline">
-            Training Journal
-          </a>
-        </li>
-      </ul>
-    </section>
-  );
+/** Main app once a profile exists — resolves the active profile and renders the wired experience. */
+function AppReady(): ReactElement {
+  const { activeProfile, isLoading } = useProfiles();
+
+  if (isLoading) {
+    return (
+      <section aria-labelledby="ready-title">
+        <h2 id="ready-title">Loading your profile…</h2>
+      </section>
+    );
+  }
+
+  if (!activeProfile) {
+    return (
+      <section aria-labelledby="ready-title">
+        <h2 id="ready-title">No active profile</h2>
+        <p>Please create a profile to begin training.</p>
+      </section>
+    );
+  }
+
+  return <MainApp profileId={activeProfile.id} />;
 }
 
 export default App;
