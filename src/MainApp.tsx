@@ -21,13 +21,22 @@ import { AccuracyDashboard } from './components/AccuracyDashboard';
 import { SensoryProfile } from './components/SensoryProfile';
 import { PhaseGym, PHASE_TITLES } from './components/PhaseGym';
 import { FreeResponseSession } from './components/FreeResponseSession';
+import { MasteryMode } from './components/MasteryMode';
 import { BUILTIN_CATEGORIES } from './features/judging/templates';
 import { BreathingGuide } from './components/BreathingGuide';
 import { BinauralPlayer } from './components/BinauralPlayer';
 import { CombinedSession } from './components/CombinedSession';
 import type { Phase0SessionRecord, Phase0SessionType } from './features/phase0/types';
 
-type View = 'home' | 'session' | 'stats' | 'journal' | 'phases' | 'phase' | 'free';
+type View =
+  | 'home'
+  | 'session'
+  | 'stats'
+  | 'journal'
+  | 'phases'
+  | 'phase'
+  | 'free'
+  | 'mastery';
 
 /**
  * Map a Phase 0 day (1-7) to its session type, matching
@@ -175,6 +184,12 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
           Drills
         </Button>
         <Button
+          variant={view === 'mastery' ? 'primary' : 'outline'}
+          onClick={() => setView('mastery')}
+        >
+          Mastery
+        </Button>
+        <Button
           variant={view === 'journal' ? 'primary' : 'outline'}
           onClick={() => setView('journal')}
         >
@@ -285,6 +300,8 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
           <SensoryProfile profileId={profileId} />
         </div>
       )}
+
+      {view === 'mastery' && <MasteryMode profileId={profileId} />}
 
       {view === 'journal' && (
         <Card asArticle className="journal-view">

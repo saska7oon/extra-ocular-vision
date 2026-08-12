@@ -130,3 +130,17 @@ body {
 .judge-warn { color: var(--color-warn, #d29922); font-size: 0.9rem; }
 .commit-valid.is-warn { color: var(--color-warn, #d29922); }
 .fr-reveal { display: flex; flex-direction: column; gap: 0.5rem; }
+
+/* Mastery mode (Phase 8) */
+.mastery-mode { display: flex; flex-direction: column; gap: 1rem; }
+.mastery-table { width: 100%; border-collapse: collapse; }
+.mastery-table th, .mastery-table td {
+  text-align: left; padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.mastery-table th { opacity: 0.7; font-size: 0.85rem; }
+.mastery-table button {
+  padding: 0.35rem 0.75rem; border-radius: 0.4rem;
+  border: 1px solid var(--border); background: rgb(var(--color-bg));
+  cursor: pointer;
+}
