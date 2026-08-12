@@ -19,12 +19,13 @@ import { Button, Card } from './ui';
 import { Phase0Dashboard } from './components/Phase0Dashboard';
 import { AccuracyDashboard } from './components/AccuracyDashboard';
 import { SensoryProfile } from './components/SensoryProfile';
+import { PhaseGym, PHASE_TITLES } from './components/PhaseGym';
 import { BreathingGuide } from './components/BreathingGuide';
 import { BinauralPlayer } from './components/BinauralPlayer';
 import { CombinedSession } from './components/CombinedSession';
 import type { Phase0SessionRecord, Phase0SessionType } from './features/phase0/types';
 
-type View = 'home' | 'session' | 'stats' | 'journal';
+type View = 'home' | 'session' | 'stats' | 'journal' | 'phases' | 'phase';
 
 /**
  * Map a Phase 0 day (1-7) to its session type, matching
@@ -46,6 +47,7 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
   const [absoluteDay, setAbsoluteDay] = useState(1);
   const [runningDay, setRunningDay] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedPhase, setSelectedPhase] = useState<1 | 2 | 3 | 4>(1);
 
   // Determine the current absolute day (the first "available" day; fallback 1).
   useEffect(() => {
@@ -164,6 +166,12 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
           Statistics
         </Button>
         <Button
+          variant={view === 'phases' || view === 'phase' ? 'primary' : 'outline'}
+          onClick={() => setView('phases')}
+        >
+          Drills
+        </Button>
+        <Button
           variant={view === 'journal' ? 'primary' : 'outline'}
           onClick={() => setView('journal')}
         >
@@ -177,6 +185,42 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
           absoluteDay={absoluteDay}
           onStartSession={startSession}
           refreshKey={refreshKey}
+        />
+      )}
+
+      {view === 'phases' && (
+        <section className="phase-selector" aria-label="Choose a drill phase">
+          <h2>Drill Phases</h2>
+          <div className="phase-grid" role="list">
+            {([1, 2, 3, 4] as const).map((p) => (
+              <Card
+                asArticle
+                key={p}
+                className="phase-card"
+                interactive
+              >
+                <h3>{PHASE_TITLES[p]}</h3>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setSelectedPhase(p);
+                    setView('phase');
+                  }}
+                >
+                  Enter
+                </Button>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {view === 'phase' && (
+        <PhaseGym
+          profileId={profileId}
+          phaseId={selectedPhase}
+          dayInPhase={1}
+          absoluteDay={absoluteDay}
         />
       )}
 

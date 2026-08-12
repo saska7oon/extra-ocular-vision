@@ -151,6 +151,15 @@ export function choiceCountFor(exerciseType: ExerciseType): number {
   return EXERCISE_CHOICES[exerciseType] ?? 2;
 }
 
+/** Map a Phase 1-4 id to its single default forced-choice config. */
+export function configForPhase(
+  phaseId: PhaseId & 1 | 2 | 3 | 4,
+): ForcedChoiceConfig {
+  return FORCED_CHOICE_CONFIGS[
+    ({ 1: 'contrast', 2: 'color', 3: 'shape', 4: 'symbol' } as const)[phaseId]
+  ]!;
+}
+
 /* ==========================================================================
  * Engine state
  * ========================================================================= */

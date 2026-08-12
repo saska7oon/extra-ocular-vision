@@ -9,6 +9,7 @@ export {
   binomialPValue,
   FORCED_CHOICE_CONFIGS,
   choiceCountFor,
+  configForPhase,
 } from './engine';
 export type {
   ForcedChoiceConfig,
