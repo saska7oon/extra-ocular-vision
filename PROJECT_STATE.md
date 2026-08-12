@@ -8,11 +8,11 @@ eyes) via a structured day-by-day curriculum. No cloud, local accounts, no
 telemetry. However you find this repo, this file will tell you exactly how far
 the build got and what's left.
 
-## Status: IN-PROGRESS (integration phase, direct-repo mode)
+## Status: IMPLEMENTED — ALL 8 PHASES WIRED (direct-repo mode, 2026-08-11)
 
 The board-based multi-agent build was ABANDONED (kanban tasks archived). The
-remaining work is being done directly in this repo, one controlled step at a
-time, committed and pushed per step. Do NOT re-open kanban swarm builds.
+remaining work was done directly in this repo, one controlled step at a time,
+committed and pushed per step. Do NOT re-open kanban swarm builds.
 
 ## What is DONE and VERIFIED
 - Project scaffold: Vite + React 18 + TypeScript strict, Vitest, ESLint/Prettier
@@ -22,34 +22,47 @@ time, committed and pushed per step. Do NOT re-open kanban swarm builds.
   curriculum progress, tier progression, target chains, integrity audits,
   templates, judging results, journal, statistics, phase0 sessions+progress
 - Local profile system: create profile, preferences, active-profile switching
-- Feature: **Phase 0** (foundations) — cardiac coherence breathing session +
-  binaural beats. Components: BreathingGuide, BinauralPlayer, Phase0Dashboard,
-  Phase0SessionCard, CombinedSession
-- Feature: **Statistics** — matches/below-chance analysis + analytics worker,
-  export (CSV/JSON/HTML), SensoryProfile, AccuracyDashboard, StatisticalAnalysis
-- Rigor-controls and difficulty-system infrastructure present but NOT fully
-  wired into a user-visible flow
-- Tests: **121 passing, 7 skipped** (skip = storage integration needing real DB)
+- Feature: **Phase 0** (foundations) — cardiac coherence breathing + binaural
+  beats. Components: BreathingGuide, BinauralPlayer, Phase0Dashboard,
+  Phase0SessionCard, CombinedSession. Wired end-to-end (persist + day progress).
+- **Unified forced-choice engine** (features/exercises) powering Phases 1-4 + 7:
+  reproducible commit-before-reveal scoring (SHA-256 target locking) + binomial
+  chance test. Reusable ForcedChoiceSession component.
+- **Phase 1**: Contrast. **Phase 2**: Color. **Phase 3**: Shape.
+  **Phase 4**: Letters/Numbers. **Phase 7**: Text reading.
+- **Phase 5**: Complex targets + programmatic free-response judge (features/
+  judging, tfidf/string-match, transparent breakdown, chance discounting).
+  FreeResponseSession component + built-in template library.
+- **Phase 6**: Environmental mapping (seated perception ONLY — no navigation,
+  path tracking, or GPS, per safety constraint). Reuses judge + templates.
+- **Phase 8**: Sustained practice / Mastery Mode — honest per-exercise mastery
+  (binomial p-value vs chance), growth-area recommendations.
+- Statistics dashboard (accuracy/chance/etc.) + SensoryProfile + journal.
+- Tests: **149 passing, 7 skipped**
 - Build: green (tsc strict + vite build + PWA manifest inject)
-- Fixed during QA: first-launch dead-end (firstLaunchComplete now set on profile
-  create + settings refresh), PWA manifest injection, CSS import paths,
-  stats/export TS strict errors
 
-## What is NOT done yet (the remaining curriculum)
-The app currently reaches a "Ready to train" scaffold screen after first launch.
-The actual progressive curriculum phases are NOT yet user-visible:
+## Phase-5/6 judge notes
+Built-in template library (playing-cards, common-objects, animals,
+environmental-mapping) in src/features/judging/. Judge is fully local and
+deterministic (no embedding model, no network).
 
-- **Phase 1: Contrast Discrimination** (days 8-14) — binary light/dark targets
-- **Phase 2: Color Recognition** (days 15-28)
-- **Phase 3: Shape Identification** (days 29-42)
-- **Phase 4: Letters and Numbers** (days 43-70)
-- **Phase 5: Complex Targets / free-response + programmatic judging** (days 71-98)
-- **Phase 6: Environmental Mapping** (days 99-140)
-- **Phase 7: Text Reading** (days 141-180)
-- **Phase 8: Sustained Practice / mastery** (days 181+)
+## Known gaps
+- Browser click-through not verified in this environment (no Chrome; root-less
+  box). Build/type/test verified. Run `npm run dev` locally to click through.
+- Phase 5/6 judge uses keyword overlap (tfidf), not semantic embeddings.
+- Mastery 'practice more' maps free-response categories; forced-choice drills
+  are not yet reachable from Mastery (go via Drills view).
 
 ## Method / conventions
-- Analyst chains: use ChatModel or subclass AsyncLLM, not the mixin on Analyst.
+- Binaural beats: generated in-app via Web Audio API (single shared engine,
+  src/audio/BinauralPlayer), never duplicated per-phase.
+- All data local (IndexedDB). Offline-first. No cloud.
+- Accessibility: screen-reader compatible, keyboard nav, voice-only mode.
+- Honesty: skepticism notices shown; string-match/tfidf judge is transparent;
+  stats report "above/below chance" honestly, never certify ability.
+- Commit-before-reveal SHA-256 target locking throughout the perceptual phases.
+
+## Method / conventions
 - Binaural beats: generated in-app via Web Audio API (single shared engine,
   `src/audio/BinauralPlayer`), NEVER duplicated per-phase. Phase 0 consumes it.
 - All data local (IndexedDB). Offline-first. No cloud.
