@@ -61,7 +61,7 @@ export interface ForcedChoiceConfig {
 
 /** The forced-choice exercise set — one config per Phase 1-4 exercise type. */
 export const FORCED_CHOICE_CONFIGS: Record<
-  Extract<ExerciseType, 'contrast' | 'color' | 'shape' | 'symbol'>,
+  Extract<ExerciseType, 'contrast' | 'color' | 'shape' | 'symbol' | 'text-reading'>,
   ForcedChoiceConfig
 > = {
   contrast: {
@@ -139,6 +139,27 @@ export const FORCED_CHOICE_CONFIGS: Record<
     roundsPerSession: 30,
     chanceBaseline: 0.1,
   },
+  'text-reading': {
+    // Phase 7 (days 141-180): functional literacy — perceiving whole written
+    // words rather than single symbols. Small, high-contrast word pool.
+    exerciseType: 'text-reading',
+    phaseId: 7,
+    options: [
+      { key: 'cat', label: 'CAT' },
+      { key: 'dog', label: 'DOG' },
+      { key: 'sun', label: 'SUN' },
+      { key: 'moon', label: 'MOON' },
+      { key: 'star', label: 'STAR' },
+      { key: 'tree', label: 'TREE' },
+      { key: 'fire', label: 'FIRE' },
+      { key: 'water', label: 'WATER' },
+      { key: 'house', label: 'HOUSE' },
+      { key: 'bird', label: 'BIRD' },
+    ],
+    choicesPerRound: 4,
+    roundsPerSession: 20,
+    chanceBaseline: 0.25,
+  },
 };
 
 /**
@@ -146,17 +167,17 @@ export const FORCED_CHOICE_CONFIGS: Record<
  * analytics constant (used by the stats layer for chance baselines).
  */
 export function choiceCountFor(exerciseType: ExerciseType): number {
-  const cfg = FORCED_CHOICE_CONFIGS[exerciseType as Extract<ExerciseType, 'contrast'|'color'|'shape'|'symbol'>];
+  const cfg = FORCED_CHOICE_CONFIGS[exerciseType as Extract<ExerciseType, 'contrast'|'color'|'shape'|'symbol'|'text-reading'>];
   if (cfg) return cfg.choicesPerRound;
   return EXERCISE_CHOICES[exerciseType] ?? 2;
 }
 
-/** Map a Phase 1-4 id to its single default forced-choice config. */
+/** Map a phase id to its single default forced-choice config (Phases 1-4, 7). */
 export function configForPhase(
-  phaseId: PhaseId & 1 | 2 | 3 | 4,
+  phaseId: 1 | 2 | 3 | 4 | 7,
 ): ForcedChoiceConfig {
   return FORCED_CHOICE_CONFIGS[
-    ({ 1: 'contrast', 2: 'color', 3: 'shape', 4: 'symbol' } as const)[phaseId]
+    ({ 1: 'contrast', 2: 'color', 3: 'shape', 4: 'symbol', 7: 'text-reading' } as const)[phaseId]
   ]!;
 }
 

@@ -77,4 +77,11 @@ describe('ForcedChoiceEngine', () => {
     const p = binomialPValue(18, 20, 0.5);
     expect(p).toBeLessThan(0.05);
   });
+
+  it('text-reading config is available for Phase 7', () => {
+    const TR = FORCED_CHOICE_CONFIGS['text-reading'];
+    expect(TR.phaseId).toBe(7);
+    expect(TR.choicesPerRound).toBe(4);
+    expect(TR.options.length).toBeGreaterThanOrEqual(TR.choicesPerRound);
+  });
 });

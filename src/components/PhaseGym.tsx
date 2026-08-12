@@ -13,23 +13,24 @@ import { useDatabase } from '../hooks';
 import { ForcedChoiceSession } from './ForcedChoiceSession';
 import type { ForcedChoiceConfig } from '../features/exercises';
 import { choiceCountFor, configForPhase } from '../features/exercises';
-import type { Session, PhaseId } from '../types';
+import type { Session } from '../types';
 
 interface PhaseGymProps {
   profileId: string;
-  phaseId: PhaseId;
+  phaseId: 1 | 2 | 3 | 4 | 7;
   dayInPhase: number;
   absoluteDay: number;
   /** Subset of drills offered in this phase (default: the phase's own config). */
   drills?: ForcedChoiceConfig[];
 }
 
-/** Human titles for the four forced-choice phases. */
+/** Human titles for the forced-choice phases. */
 export const PHASE_TITLES: Record<number, string> = {
   1: 'Phase 1: Contrast Discrimination',
   2: 'Phase 2: Color Recognition',
   3: 'Phase 3: Shape Identification',
   4: 'Phase 4: Letters & Numbers',
+  7: 'Phase 7: Text Reading',
 };
 
 export function PhaseGym({

@@ -49,7 +49,7 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
   const [absoluteDay, setAbsoluteDay] = useState(1);
   const [runningDay, setRunningDay] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [selectedPhase, setSelectedPhase] = useState<1 | 2 | 3 | 4>(1);
+  const [selectedPhase, setSelectedPhase] = useState<1 | 2 | 3 | 4 | 7>(1);
   const [freeCategory, setFreeCategory] = useState<string | null>(null);
 
   // Determine the current absolute day (the first "available" day; fallback 1).
@@ -195,7 +195,7 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
         <section className="phase-selector" aria-label="Choose a drill phase">
           <h2>Drill Phases</h2>
           <div className="phase-grid" role="list">
-            {([1, 2, 3, 4] as const).map((p) => (
+            {([1, 2, 3, 4, 7] as const).map((p) => (
               <Card
                 asArticle
                 key={p}
