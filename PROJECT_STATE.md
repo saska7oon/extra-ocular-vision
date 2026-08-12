@@ -50,8 +50,13 @@ deterministic (no embedding model, no network).
 - Browser click-through not verified in this environment (no Chrome; root-less
   box). Build/type/test verified. Run `npm run dev` locally to click through.
 - Phase 5/6 judge uses keyword overlap (tfidf), not semantic embeddings.
-- Mastery 'practice more' maps free-response categories; forced-choice drills
-  are not yet reachable from Mastery (go via Drills view).
+- Some storage tests (7) are skipped (need a real IndexedDB environment).
+
+## Resolved (added later)
+- Difficulty tier progression: 5 tiers now wired into the engine + PhaseGym
+  selector (advance >=80% x3, revert <60% x3).
+- Mastery 'Practice more' now opens the matching forced-choice drill too,
+  not only free-response categories.
 
 ## Method / conventions
 - Binaural beats: generated in-app via Web Audio API (single shared engine,
