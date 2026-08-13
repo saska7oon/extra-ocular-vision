@@ -156,7 +156,9 @@ function ProfileCreationForm({
           id="profile-error"
           role="alert"
           style={{ color: 'rgb(var(--color-error))' }}
-        >{error}</p>
+        >
+          {error}
+        </p>
       )}
       <button type="submit" className="btn btn-primary">
         Create Profile &amp; Start Training
