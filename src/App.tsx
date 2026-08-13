@@ -118,25 +118,27 @@ function ProfileCreationForm({
 }) {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const { create, error: createError } = useCreateProfile();
+  const { create } = useCreateProfile();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    const result = await create(name || 'Default');
-    if (!result) {
-      // Surface the real failure cause from the storage layer.
-      const e = createError as Error | undefined;
-      const name = e?.name ? `${e.name}: ` : '';
-      const msg = (e?.message || '').trim();
-      setError(
-        (name + msg) || 'Unknown error — see console (F12) for the full object.'
-      );
-      // Also dump the raw object so you can inspect it directly.
-      console.error('[EOV] create-profile raw error:', createError);
-      return;
+    try {
+      const record = await create(name || 'Default');
+      if (!record) {
+        // create() rejected but didn't throw (defensive); show generic fallback.
+        setError('Profile could not be created — see console (F12).');
+        return;
+      }
+      await onProfileCreated();
+    } catch (err) {
+      // create() now throws the real cause, so we can surface it directly.
+      const e = err as Error | undefined;
+      const nm = e?.name ? `${e.name}: ` : '';
+      const msg = (e && e.message) || String(err);
+      setError(`Creation failed: ${nm}${msg || 'see console'} ...`);
+      console.error('[EOV] create-profile rejected:', err);
     }
-    await onProfileCreated();
   };
 
   return (

@@ -136,8 +136,9 @@ export function useCreateProfile(): MutationResult<UserProfile> & {
   const create = useCallback(
     async (name: string): Promise<UserProfile | null> => {
       if (!repos) {
-        setError(new Error('Database not available'));
-        return null;
+        const e = new Error('Database not available');
+        setError(e);
+        throw e;
       }
       setIsPending(true);
       setError(null);
@@ -146,17 +147,17 @@ export function useCreateProfile(): MutationResult<UserProfile> & {
         setData(record);
         return record;
       } catch (err) {
-        // Log the real cause so it's visible in the browser console (F12),
-        // in addition to surfacing it through hook state for the UI.
+        // Log the real cause so it's visible in the browser console (F12).
         console.error('Profile creation failed:', err);
-        // Dexie throws DexieError subclasses (with .name like MissingAPIError);
-        // be defensive in case the rejection is not an Error.
+        // Dexie throws DexieError subclasses (MissingAPIError, etc.); wrap
+        // non-Error rejections so callers always get a real Error with a name.
         if (err instanceof Error) {
           setError(err);
-        } else {
-          setError(new Error(JSON.stringify(err)));
+          throw err;
         }
-        return null;
+        const wrapped = new Error(JSON.stringify(err));
+        setError(wrapped);
+        throw wrapped;
       } finally {
         setIsPending(false);
       }
@@ -167,6 +168,8 @@ export function useCreateProfile(): MutationResult<UserProfile> & {
   return { data, error, isPending, create };
 }
 
+/** Switch the active profile. */
+
 /**
  * Create a profile and wire up first-launch settings atomically.
  *
@@ -174,7 +177,7 @@ export function useCreateProfile(): MutationResult<UserProfile> & {
  * and `firstLaunchComplete` is flipped so the app advances past onboarding.
  * Subsequent profiles are created non-active (user switches manually).
  */
-async function createProfileWithSettings(
+export async function createProfileWithSettings(
   repos: EOVDatabases,
   name: string,
   preferences: UserPreferences,

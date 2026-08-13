@@ -39,4 +39,39 @@ describe('useCreateProfile hook', () => {
     const active2 = await repos.profiles.getActive();
     expect(active2?.id).toBe(record.id);
   }, 15000);
+
+  it('create() throws a real Error (with name+message) when the repo fails', async () => {
+    // A repo whose create() rejects — mirrors a Dexie failure at runtime.
+    const failingRepos = {
+      profiles: {
+        getActive: async () => undefined,
+        create: async () => {
+          throw new Error('simulated IndexedDB failure');
+        },
+      },
+      settings: {
+        setActiveProfileId: async () => {},
+        update: async () => ({} as any),
+      },
+    } as unknown as EOVDatabases;
+
+    // Call the helper directly to assert the throw-with-real-Error contract.
+    const helper = await import('../../src/hooks');
+    let thrown: unknown = null;
+    try {
+      await helper.createProfileWithSettings(failingRepos, 'X', {
+        theme: 'dark',
+        accessibilityMode: 'standard',
+        audioEnabled: true,
+        showSkepticismWarnings: true,
+        strictRigor: true,
+        voiceSpeed: 1,
+        entrainmentEnabled: false,
+      });
+    } catch (e) {
+      thrown = e;
+    }
+    expect(thrown).toBeInstanceOf(Error);
+    expect((thrown as Error).message).toMatch(/simulated IndexedDB failure/);
+  });
 });
