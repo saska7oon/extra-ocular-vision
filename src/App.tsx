@@ -122,22 +122,25 @@ function ProfileCreationForm({
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log('[EOV] create-profile: form submitted, name=', JSON.stringify(name));
     setError(null);
     try {
       const record = await create(name || 'Default');
+      console.log('[EOV] create-profile: create() resolved record=', record);
       if (!record) {
         // create() rejected but didn't throw (defensive); show generic fallback.
         setError('Profile could not be created — see console (F12).');
         return;
       }
       await onProfileCreated();
+      console.log('[EOV] create-profile: onProfileCreated() resolved');
     } catch (err) {
+      console.error('[EOV] create-profile: caught in form:', err);
       // create() now throws the real cause, so we can surface it directly.
       const e = err as Error | undefined;
       const nm = e?.name ? `${e.name}: ` : '';
       const msg = (e && e.message) || String(err);
       setError(`Creation failed: ${nm}${msg || 'see console'} ...`);
-      console.error('[EOV] create-profile rejected:', err);
     }
   };
 
