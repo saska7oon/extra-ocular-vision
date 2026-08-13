@@ -14,6 +14,7 @@
  */
 import { useMemo, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
+import { uuid4 } from '../utils/crypto';
 import { clsx } from '../utils/clsx';
 import { Button, Card } from '../ui';
 import type { ForcedChoiceConfig } from '../features/exercises';
@@ -39,7 +40,7 @@ export function ForcedChoiceSession({
   onSessionComplete,
   difficulty = 'beginner',
 }: ForcedChoiceSessionProps): ReactElement {
-  const sessionId = useMemo(() => crypto.randomUUID(), []);
+  const sessionId = useMemo(() => uuid4(), []);
   const engineRef = useRef<ForcedChoiceEngine | null>(null);
 
   const [number, setNumber] = useState(0); // 0 = not started

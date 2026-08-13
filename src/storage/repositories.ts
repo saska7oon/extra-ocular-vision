@@ -32,6 +32,7 @@ import type {
   StateHistoryEntry,
   DayCompletion,
 } from '../features/phase0/types';
+import { uuid4 } from '../utils/crypto';
 
 /* ==========================================================================
  * Profile Repository
@@ -44,7 +45,7 @@ export class ProfileRepository {
     const now = Date.now();
     const record: UserProfile = {
       ...profile,
-      id: crypto.randomUUID(),
+      id: uuid4(),
       createdAt: now,
       lastActiveAt: now,
     };
@@ -147,7 +148,7 @@ export class SessionRepository {
   constructor(private readonly db: EOVDatabase) {}
 
   async create(session: Omit<Session, 'id'>): Promise<Session> {
-    const record: Session = { ...session, id: crypto.randomUUID() };
+    const record: Session = { ...session, id: uuid4() };
     await this.db.sessions.add(record);
     return record;
   }
@@ -248,7 +249,7 @@ export class IntegrityRepository {
   constructor(private readonly db: EOVDatabase) {}
 
   async add(audit: Omit<IntegrityAudit, 'id'>): Promise<void> {
-    await this.db.integrityAudits.add({ ...audit, id: crypto.randomUUID() });
+    await this.db.integrityAudits.add({ ...audit, id: uuid4() });
   }
 
   async getBySession(sessionId: string): Promise<IntegrityAudit[]> {
@@ -264,7 +265,7 @@ export class TemplateRepository {
   constructor(private readonly db: EOVDatabase) {}
 
   async create(entry: Omit<TemplateEntry, 'id'>): Promise<TemplateEntry> {
-    const record: TemplateEntry = { ...entry, id: crypto.randomUUID() };
+    const record: TemplateEntry = { ...entry, id: uuid4() };
     await this.db.templates.add(record);
     return record;
   }
@@ -301,7 +302,7 @@ export class JudgingResultRepository {
   constructor(private readonly db: EOVDatabase) {}
 
   async create(result: Omit<JudgingResult, 'id'>): Promise<JudgingResult> {
-    const record: JudgingResult = { ...result, id: crypto.randomUUID() };
+    const record: JudgingResult = { ...result, id: uuid4() };
     await this.db.judgingResults.add(record);
     return record;
   }
@@ -326,7 +327,7 @@ export class JournalRepository {
     const now = Date.now();
     const record: JournalEntry = {
       ...entry,
-      id: crypto.randomUUID(),
+      id: uuid4(),
       createdAt: now,
       updatedAt: now,
     };
@@ -387,7 +388,7 @@ export class Phase0Repository {
   constructor(private readonly db: EOVDatabase) {}
 
   async createSession(session: Omit<Phase0SessionRecord, 'id'>): Promise<Phase0SessionRecord> {
-    const record: Phase0SessionRecord = { ...session, id: crypto.randomUUID() };
+    const record: Phase0SessionRecord = { ...session, id: uuid4() };
     await this.db.phase0Sessions.add(record);
     return record;
   }
@@ -440,7 +441,7 @@ export class Phase0Repository {
       .first();
     const record: Phase0Progress = existing
       ? { ...existing, completed: true, completedAt: Date.now() }
-      : { id: crypto.randomUUID(), profileId, day, completed: true, completedAt: Date.now() };
+      : { id: uuid4(), profileId, day, completed: true, completedAt: Date.now() };
     await this.db.phase0Progress.put(record);
     return record;
   }

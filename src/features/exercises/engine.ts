@@ -28,6 +28,7 @@ import {
   generateLockedTargets,
   randomSeed,
   createPRNG,
+  uuid4,
   verifyCommitment,
   type Commitment,
 } from '../../utils/crypto';
@@ -309,7 +310,7 @@ export class ForcedChoiceEngine {
     const target = this.cfg.options.find((o) => o.key === locked.targetKey);
     const correct = answerKey === locked.targetKey;
     const round: ExerciseRound = {
-      id: crypto.randomUUID(),
+      id: uuid4(),
       sessionId: this.opts.sessionId,
       roundNumber: this._cursor + 1,
       exerciseType: this.cfg.exerciseType,

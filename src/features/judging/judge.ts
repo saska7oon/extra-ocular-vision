@@ -27,6 +27,7 @@ import type {
   JudgingResult,
   TemplateEntry,
 } from '../../types';
+import { uuid4 } from '../../utils/crypto';
 
 /* ==========================================================================
  * Tokenization / normalization
@@ -179,7 +180,7 @@ export function judgeFreeResponse(
     .join(' | ');
 
   return {
-    id: crypto.randomUUID(),
+    id: uuid4(),
     sessionId: '', // filled by caller
     roundId: '', // filled by caller
     targetLabel: targetTemplate.label,

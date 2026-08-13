@@ -28,6 +28,7 @@ import {
   CARRIER_HZ,
   type ActiveSound,
 } from '../../audio';
+import { uuid4 } from '../../utils/crypto';
 
 import type { BreathCycle } from '../../audio/breathing-session';
 
@@ -171,7 +172,7 @@ export function createBreathingController(
       state = completeState;
 
       let record: Phase0SessionRecord = {
-        id: crypto.randomUUID(),
+        id: uuid4(),
         profileId,
         sessionType: 'breathing',
         absoluteDay,
@@ -279,7 +280,7 @@ export function createBinauralController(
       const now = Date.now();
       stopAudio();
       let record: Phase0SessionRecord = {
-        id: crypto.randomUUID(),
+        id: uuid4(),
         profileId,
         sessionType: 'binaural',
         absoluteDay,
@@ -397,7 +398,7 @@ export function createCombinedController(
       _sound = null;
       currentStageIndex = STAGE_ORDER.length - 1;
       let record: Phase0SessionRecord = {
-        id: crypto.randomUUID(),
+        id: uuid4(),
         profileId,
         sessionType: 'combined',
         absoluteDay,

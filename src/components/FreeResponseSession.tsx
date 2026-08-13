@@ -19,7 +19,7 @@ import { useMemo, useState } from 'react';
 import type { ReactElement } from 'react';
 import { clsx } from '../utils/clsx';
 import { Button, Card } from '../ui';
-import { commitTarget, verifyCommitment } from '../utils/crypto';
+import { commitTarget, verifyCommitment, uuid4 } from '../utils/crypto';
 import { judgeFreeResponse, toScale10 } from '../features/judging';
 import { templatesForCategory } from '../features/judging/templates';
 import type { TemplateEntry, JudgingResult } from '../types';
@@ -39,7 +39,7 @@ export function FreeResponseSession({
   onComplete,
 }: FreeResponseSessionProps): ReactElement {
   const templates = useMemo(() => templatesForCategory(category), [category]);
-  const sessionId = useMemo(() => crypto.randomUUID(), []);
+  const sessionId = useMemo(() => uuid4(), []);
 
   const [roundIndex, setRoundIndex] = useState(0);
   const [description, setDescription] = useState('');

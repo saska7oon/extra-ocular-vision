@@ -10,6 +10,7 @@ import { useState } from 'react';
 import type { ReactElement } from 'react';
 import { Button, Card } from '../ui';
 import { clsx } from '../utils/clsx';
+import { uuid4 } from '../utils/crypto';
 import type {
   Phase0SessionRecord,
   Phase0SessionType,
@@ -80,7 +81,7 @@ export function Phase0SessionCard({
         // Fallback: emit a placeholder record for headless tests.
         const now = Date.now();
         const record: Phase0SessionRecord = {
-          id: crypto.randomUUID(),
+          id: uuid4(),
           profileId,
           sessionType,
           absoluteDay,
