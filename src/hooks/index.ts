@@ -149,7 +149,13 @@ export function useCreateProfile(): MutationResult<UserProfile> & {
         // Log the real cause so it's visible in the browser console (F12),
         // in addition to surfacing it through hook state for the UI.
         console.error('Profile creation failed:', err);
-        setError(err instanceof Error ? err : new Error(String(err)));
+        // Dexie throws DexieError subclasses (with .name like MissingAPIError);
+        // be defensive in case the rejection is not an Error.
+        if (err instanceof Error) {
+          setError(err);
+        } else {
+          setError(new Error(JSON.stringify(err)));
+        }
         return null;
       } finally {
         setIsPending(false);

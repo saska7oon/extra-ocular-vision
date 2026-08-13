@@ -126,10 +126,14 @@ function ProfileCreationForm({
     const result = await create(name || 'Default');
     if (!result) {
       // Surface the real failure cause from the storage layer.
+      const e = createError as Error | undefined;
+      const name = e?.name ? `${e.name}: ` : '';
+      const msg = (e?.message || '').trim();
       setError(
-        (createError ? createError.message : 'Unknown error') +
-          ' ...Check browser console (F12) for details.',
+        (name + msg) || 'Unknown error — see console (F12) for the full object.'
       );
+      // Also dump the raw object so you can inspect it directly.
+      console.error('[EOV] create-profile raw error:', createError);
       return;
     }
     await onProfileCreated();
