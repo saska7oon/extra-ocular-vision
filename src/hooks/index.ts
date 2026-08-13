@@ -8,7 +8,7 @@
  *  - Graceful degradation when IndexedDB is unavailable
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import type {
   UserProfile,
   UserPreferences,
@@ -59,18 +59,29 @@ function getRepositories(): EOVDatabases {
  * Returns the repositories or null if IndexedDB failed.
  */
 export function useDatabase(): EOVDatabases | null {
-  const [repos, setRepos] = useState<EOVDatabases | null>(_repos);
+  // Lazy-init from the module singleton so we pick up `_repos` even when it
+  // was populated by a different component's earlier render/effect (the
+  // previous version read `_repos` only once at first render and then never
+  // recovered if the singleton was filled later). `useState` preserves the
+  // first non-null value across re-renders.
+  const [repos, setRepos] = useState<EOVDatabases | null>(() => _repos);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (_repos) return;
+    // If the singleton was populated between renders, adopt it.
+    if (repos) return;
+    if (_repos) {
+      setRepos(_repos);
+      return;
+    }
     try {
-      setRepos(getRepositories());
+      const r = getRepositories();
+      setRepos(r);
     } catch (err) {
       console.error('Failed to initialize database:', err);
       setError(err instanceof Error ? err : new Error(String(err)));
     }
-  }, []);
+  }, [repos]);
 
   // Expose error via the return for callers that need it.
   if (error) {
@@ -502,25 +513,37 @@ export function useAppSettings(): {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Keep a ref to the latest `repos` so `refresh` (used by the profile-creation
+  // form) always reads the current repositories, even when invoked from a
+  // stale closure. The auto-load effect below also depends on `repos` so it
+  // re-fires when the DB finishes initializing.
+  const reposRef = useRef(repos);
+  reposRef.current = repos;
+
   const load = useCallback(async () => {
-    if (!repos) {
+    const r = reposRef.current;
+    if (!r) {
       setError(new Error('Database not available'));
       setIsLoading(false);
       return;
     }
     try {
-      const s = await repos.settings.get();
-      setSettings(s);
+      const s = await r.settings.get();
+      // Spread into a new object so React always sees a fresh reference and
+      // re-renders consumers even if Dexie returns a cached/structural-clone
+      // of the same record.
+      setSettings({ ...s });
     } catch (err) {
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setIsLoading(false);
     }
-  }, [repos]);
+  }, []);
 
+  // Re-fetch whenever `repos` becomes available/stale.
   useEffect(() => {
     load();
-  }, [load]);
+  }, [load, repos]);
 
   return { settings, isLoading, error, refresh: load };
 }
