@@ -142,20 +142,13 @@ export function useCreateProfile(): MutationResult<UserProfile> & {
       setIsPending(true);
       setError(null);
       try {
-        const existing = await repos.profiles.getActive();
-        const isFirst = existing === undefined;
-        const record = await repos.profiles.create({
-          name,
-          preferences: DEFAULT_PREFERENCES,
-          isActive: isFirst,
-        });
-        if (isFirst) {
-          await repos.settings.setActiveProfileId(record.id);
-          await repos.settings.update({ firstLaunchComplete: true });
-        }
+        const record = await createProfileWithSettings(repos, name, DEFAULT_PREFERENCES);
         setData(record);
         return record;
       } catch (err) {
+        // Log the real cause so it's visible in the browser console (F12),
+        // in addition to surfacing it through hook state for the UI.
+        console.error('Profile creation failed:', err);
         setError(err instanceof Error ? err : new Error(String(err)));
         return null;
       } finally {
@@ -166,6 +159,32 @@ export function useCreateProfile(): MutationResult<UserProfile> & {
   );
 
   return { data, error, isPending, create };
+}
+
+/**
+ * Create a profile and wire up first-launch settings atomically.
+ *
+ * On first launch (no active profile exists), the new profile becomes active
+ * and `firstLaunchComplete` is flipped so the app advances past onboarding.
+ * Subsequent profiles are created non-active (user switches manually).
+ */
+async function createProfileWithSettings(
+  repos: EOVDatabases,
+  name: string,
+  preferences: UserPreferences,
+): Promise<UserProfile> {
+  const existing = await repos.profiles.getActive();
+  const isFirst = existing === undefined;
+  const record = await repos.profiles.create({
+    name,
+    preferences,
+    isActive: isFirst,
+  });
+  if (isFirst) {
+    await repos.settings.setActiveProfileId(record.id);
+    await repos.settings.update({ firstLaunchComplete: true });
+  }
+  return record;
 }
 
 /** Switch the active profile. */

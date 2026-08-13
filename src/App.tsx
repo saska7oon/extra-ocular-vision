@@ -118,14 +118,18 @@ function ProfileCreationForm({
 }) {
   const [name, setName] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const { create } = useCreateProfile();
+  const { create, error: createError } = useCreateProfile();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     const result = await create(name || 'Default');
     if (!result) {
-      setError('Failed to create profile. Check browser console for details.');
+      // Surface the real failure cause from the storage layer.
+      setError(
+        (createError ? createError.message : 'Unknown error') +
+          ' ...Check browser console (F12) for details.',
+      );
       return;
     }
     await onProfileCreated();
@@ -152,9 +156,7 @@ function ProfileCreationForm({
           id="profile-error"
           role="alert"
           style={{ color: 'rgb(var(--color-error))' }}
-        >
-          {error}
-        </p>
+        >{error}</p>
       )}
       <button type="submit" className="btn btn-primary">
         Create Profile &amp; Start Training

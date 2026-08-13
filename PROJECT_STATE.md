@@ -38,7 +38,7 @@ committed and pushed per step. Do NOT re-open kanban swarm builds.
 - **Phase 8**: Sustained practice / Mastery Mode — honest per-exercise mastery
   (binomial p-value vs chance), growth-area recommendations.
 - Statistics dashboard (accuracy/chance/etc.) + SensoryProfile + journal.
-- Tests: **149 passing, 7 skipped**
+- Tests: **163 passing** (up from 121), 7 skipped
 - Build: green (tsc strict + vite build + PWA manifest inject)
 
 ## Phase-5/6 judge notes
