@@ -11,7 +11,7 @@ import {
   getTutorialCategory,
   getTutorialSection,
 } from '../features/tutorials';
-import { ForcedChoiceSession, VisualTarget } from './ForcedChoiceSession';
+import { ForcedChoiceSession, ShapeIcon } from './ForcedChoiceSession';
 import { BreathingGuide } from './BreathingGuide';
 import { BinauralPlayer } from './BinauralPlayer';
 import { FORCED_CHOICE_CONFIGS } from '../features/exercises';
@@ -673,59 +673,190 @@ function BreathingAnimation(): ReactElement {
 }
 
 function BinauralAnimation(): ReactElement {
-  const [waves, setWaves] = useState<Array<{ id: number; phase: number }>>([]);
+  const [time, setTime] = useState(0);
+  const leftFreq = 155;
+  const rightFreq = 145;
+  const beatFreq = Math.abs(leftFreq - rightFreq);
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setWaves(w => {
-        const next = w.map(wave => ({ ...wave, phase: (wave.phase + 0.1) % (Math.PI * 2) }));
-        if (next.length < 8) next.push({ id: Date.now(), phase: 0 });
-        return next.slice(-8);
-      });
-    }, 150);
-    return () => clearInterval(id);
+    const id = requestAnimationFrame(function animate(t) {
+      setTime(t / 1000);
+      requestAnimationFrame(animate);
+    });
+    return () => cancelAnimationFrame(id);
   }, []);
 
+  // Generate points for left wave (slightly higher freq)
+  const leftPoints = Array.from({ length: 200 }, (_, i) => {
+    const x = (i / 199) * 400;
+    const y = 50 + Math.sin((x / 400) * Math.PI * 4 * (leftFreq / 100) + time * leftFreq / 50) * 30;
+    return `${x},${y}`;
+  }).join(' ');
+
+  // Generate points for right wave (slightly lower freq)
+  const rightPoints = Array.from({ length: 200 }, (_, i) => {
+    const x = (i / 199) * 400;
+    const y = 150 + Math.sin((x / 400) * Math.PI * 4 * (rightFreq / 100) + time * rightFreq / 50) * 30;
+    return `${x},${y}`;
+  }).join(' ');
+
+  // Generate points for perceived beat (amplitude modulation)
+  const beatPoints = Array.from({ length: 200 }, (_, i) => {
+    const x = (i / 199) * 400;
+    const envelope = Math.abs(Math.sin((x / 400) * Math.PI * 2 * (beatFreq / 10) + time * beatFreq / 10)) * 30;
+    const y = 250 - envelope;
+    return `${x},${y}`;
+  }).join(' ');
+
   return (
-    <div className="binaural-animation" role="img" aria-label="Binaural beats wave animation">
-      {waves.map(wave => (
-        <div
-          key={wave.id}
-          className="binaural-wave"
-          style={{
-            transform: `translateX(${Math.sin(wave.phase) * 20}px)`,
-            opacity: 0.3 + Math.abs(Math.sin(wave.phase)) * 0.7,
-          }}
-        >
-          <div className="wave-left" />
-          <div className="wave-center" />
-          <div className="wave-right" />
-        </div>
-      ))}
+    <div className="binaural-animation" role="img" aria-label="Binaural beats visualization">
+      <div className="binaural-explanation">
+        <h4>Binaural Beats: How They Work</h4>
+        <p className="binaural-freqs">
+          Left ear: <strong>{leftFreq} Hz</strong> → Right ear: <strong>{rightFreq} Hz</strong> → Brain perceives: <strong>{beatFreq} Hz beat</strong>
+        </p>
+      </div>
+      <svg className="binaural-waves" viewBox="0 0 400 300" aria-label="Binaural beats wave visualization">
+        <defs>
+          <linearGradient id="leftGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgb(var(--color-accent))" />
+            <stop offset="100%" stopColor="rgb(var(--color-accent) / 0.3)" />
+          </linearGradient>
+          <linearGradient id="rightGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgb(var(--color-success))" />
+            <stop offset="100%" stopColor="rgb(var(--color-success) / 0.3)" />
+          </linearGradient>
+          <linearGradient id="beatGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="rgb(var(--color-warning))" />
+            <stop offset="100%" stopColor="rgb(var(--color-warning) / 0.3)" />
+          </linearGradient>
+        </defs>
+        
+        {/* Frequency labels */}
+        <text x="10" y="50" fill="rgb(var(--color-text-muted))" fontFamily="var(--font-mono)" fontSize="11" textAnchor="start">Left Ear (155 Hz)</text>
+        <text x="10" y="150" fill="rgb(var(--color-text-muted))" fontFamily="var(--font-mono)" fontSize="11" textAnchor="start">Right Ear (145 Hz)</text>
+        <text x="10" y="280" fill="rgb(var(--color-text-muted))" fontFamily="var(--font-mono)" fontSize="11" textAnchor="start">Perceived Beat (10 Hz)</text>
+        
+        {/* Left ear wave */}
+        <polyline 
+          points={leftPoints} 
+          fill="none" 
+          stroke="url(#leftGrad)" 
+          strokeWidth="2" 
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        
+        {/* Right ear wave */}
+        <polyline 
+          points={rightPoints} 
+          fill="none" 
+          stroke="url(#rightGrad)" 
+          strokeWidth="2" 
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        
+        {/* Perceived beat envelope */}
+        <polyline 
+          points={beatPoints} 
+          fill="none" 
+          stroke="url(#beatGrad)" 
+          strokeWidth="3" 
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray="8,4"
+        />
+        
+        {/* Carrier frequency reference lines */}
+        <line x1="0" y1="50" x2="400" y2="50" stroke="rgb(var(--color-border))" strokeWidth="1" strokeDasharray="4,4" />
+        <line x1="0" y1="150" x2="400" y2="150" stroke="rgb(var(--color-border))" strokeWidth="1" strokeDasharray="4,4" />
+        <line x1="0" y1="250" x2="400" y2="250" stroke="rgb(var(--color-border))" strokeWidth="1" strokeDasharray="4,4" />
+        
+        {/* Beat frequency annotation */}
+        <g className="beat-annotation">
+          <line x1="100" y1="280" x2="300" y2="280" stroke="rgb(var(--color-warning))" strokeWidth="2" />
+          <text x="200" y="275" fill="rgb(var(--color-warning))" fontFamily="var(--font-mono)" fontSize="10" textAnchor="middle">{beatFreq} Hz beat</text>
+        </g>
+      </svg>
     </div>
   );
 }
 
 function VeilAnimation(): ReactElement {
-  const [state, setState] = useState<'lowered' | 'lifting' | 'raised'>('lowered');
+  const [state, setState] = useState<'perceiving' | 'committing' | 'revealing' | 'revealed'>('perceiving');
+  const [targetType, setTargetType] = useState<'color' | 'shape' | 'symbol'>('color');
+  const [targetValue, setTargetValue] = useState('#ff4444');
+
+  const targets = [
+    { type: 'color' as const, value: '#ff4444', label: 'Red' },
+    { type: 'color' as const, value: '#4444ff', label: 'Blue' },
+    { type: 'shape' as const, value: 'circle', label: 'Circle' },
+    { type: 'shape' as const, value: 'triangle', label: 'Triangle' },
+    { type: 'symbol' as const, value: 'A', label: 'A' },
+    { type: 'symbol' as const, value: 'Z', label: 'Z' },
+  ];
+
+  const targetIndex = targets.findIndex(t => t.type === targetType && t.value === targetValue);
+  const nextTarget = targets[(targetIndex + 1) % targets.length];
 
   useEffect(() => {
     const cycle = () => {
-      setState('lowered');
-      setTimeout(() => setState('lifting'), 3000);
-      setTimeout(() => setState('raised'), 4000);
-      setTimeout(() => cycle(), 7000);
+      // Perceiving phase - target behind veil
+      setState('perceiving');
+      setTimeout(() => {
+        // Committing phase
+        setState('committing');
+        setTimeout(() => {
+          // Revealing phase - veil lifts
+          setState('revealing');
+          setTimeout(() => {
+            // Revealed - show target
+            setState('revealed');
+            setTimeout(() => {
+              // Next target
+              if (nextTarget) {
+                setTargetType(nextTarget.type);
+                setTargetValue(nextTarget.value);
+              }
+              cycle();
+            }, 3000);
+          }, 1500);
+        }, 1000);
+      }, 3000);
     };
     cycle();
   }, []);
 
   return (
-    <div className="veil-animation" role="img" aria-label="Veil lifting animation">
-      <div className={`veil-fabric ${state}`} />
-      <div className="veil-target">
-        <VisualTarget meta={{ type: 'color', value: '#ff4444' }} />
+    <div className="veil-animation" role="img" aria-label="Veil perception and reveal animation">
+      <div className="veil-explanation">
+        <h4>The Veil Metaphor: Commit Before Reveal</h4>
+        <p className="veil-step">{state === 'perceiving' && '1. Perceive the target behind the veil'}</p>
+        <p className="veil-step">{state === 'committing' && '2. Commit your answer (SHA-256 locked)'}</p>
+        <p className="veil-step">{state === 'revealing' && '3. The veil lifts...'}</p>
+        <p className="veil-step">{state === 'revealed' && `4. Target revealed: ${targets.find(t => t.type === targetType && t.value === targetValue)?.label || 'Target'} — verified against commitment`}</p>
       </div>
-      <p className="veil-state">{state === 'lowered' ? 'Perceiving...' : state === 'lifting' ? 'Revealing...' : 'Revealed!'}</p>
+      <div className="veil-stage">
+        <div className={`veil-fabric ${state}`} />
+        <div className="veil-target">
+          {targetType === 'color' && (
+            <div className="fc-visual-target fc-visual-color" style={{ backgroundColor: targetValue }} aria-hidden="true" />
+          )}
+          {targetType === 'shape' && (
+            <ShapeIcon shape={targetValue} className="fc-visual-target fc-visual-shape" />
+          )}
+          {targetType === 'symbol' && (
+            <span className="fc-visual-target fc-visual-symbol">{targetValue}</span>
+          )}
+        </div>
+        <div className="veil-status">
+          {state === 'perceiving' && '🧘 Perceiving...'}
+          {state === 'committing' && '🔒 Committing...'}
+          {state === 'revealing' && '🌅 Revealing...'}
+          {state === 'revealed' && '✅ Verified'}
+        </div>
+      </div>
     </div>
   );
 }
