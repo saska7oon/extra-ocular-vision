@@ -23,6 +23,7 @@ import { PhaseGym, PHASE_TITLES } from './components/PhaseGym';
 import { FreeResponseSession } from './components/FreeResponseSession';
 import { FreePlay } from './components/FreePlay';
 import { MasteryMode } from './components/MasteryMode';
+import { Tutorial } from './components/Tutorial';
 import { BUILTIN_CATEGORIES } from './features/judging/templates';
 import { BreathingGuide } from './components/BreathingGuide';
 import { BinauralPlayer } from './components/BinauralPlayer';
@@ -38,7 +39,8 @@ type View =
   | 'phase'
   | 'free'
   | 'mastery'
-  | 'freeplay';
+  | 'freeplay'
+  | 'tutorial';
 
 /**
  * Map a Phase 0 day (1-7) to its session type, matching
@@ -172,6 +174,12 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
           onClick={() => setView('home')}
         >
           Home
+        </Button>
+        <Button
+          variant={view === 'tutorial' ? 'primary' : 'outline'}
+          onClick={() => setView('tutorial')}
+        >
+          Tutorials
         </Button>
         <Button
           variant={view === 'freeplay' ? 'primary' : 'outline'}
@@ -313,6 +321,14 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
 
       {view === 'freeplay' && (
         <FreePlay
+          profileId={profileId}
+          absoluteDay={absoluteDay}
+          onSessionComplete={handleSessionComplete}
+        />
+      )}
+
+      {view === 'tutorial' && (
+        <Tutorial
           profileId={profileId}
           absoluteDay={absoluteDay}
           onSessionComplete={handleSessionComplete}
