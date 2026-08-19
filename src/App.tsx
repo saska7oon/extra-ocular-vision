@@ -12,8 +12,10 @@
  */
 
 import { useEffect, useState, type FormEvent, type ReactElement } from 'react';
-import { useAppSettings, useTheme, useCreateProfile, useProfiles } from './hooks';
+import { useAppSettings, useTheme, useCreateProfile, useProfiles, useSetActiveProfile } from './hooks';
 import { MainApp } from './MainApp';
+import { Button } from './ui';
+import { clsx } from './utils/clsx';
 
 /** Type for the beforeinstallprompt event */
 interface BeforeInstallPromptEvent extends Event {
@@ -25,6 +27,9 @@ function App() {
   const { settings, isLoading, refresh: refreshSettings } = useAppSettings();
   const { resolvedTheme } = useTheme();
   const [, setPwaInstalled] = useState(false);
+  const { profiles, activeProfile, refresh: refreshProfiles } = useProfiles();
+  const { activate: setActiveProfile } = useSetActiveProfile();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // Handle PWA install prompt (deferred).
   useEffect(() => {
@@ -62,10 +67,61 @@ function App() {
       {/* Main layout */}
       <div className="app" data-theme={resolvedTheme}>
         <header className="app-header" role="banner">
-          <h1 id="app-title">Extra-Ocular Vision Training</h1>
-          <p className="app-subtitle">
-            Local-first • Offline • No cloud sync
-          </p>
+          <div className="app-header__left">
+            <h1 id="app-title">Extra-Ocular Vision Training</h1>
+            <p className="app-subtitle">
+              Local-first • Offline • No cloud sync
+            </p>
+          </div>
+          <div className="app-header__right">
+            {settings?.firstLaunchComplete && profiles.length > 0 && (
+              <div className="profile-switcher">
+                <Button
+                  variant="ghost"
+                  className="profile-switcher__trigger"
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  aria-expanded={showProfileMenu}
+                  aria-haspopup="true"
+                  aria-label={`Current profile: ${activeProfile?.name || 'Unknown'}`}
+                >
+                  <span className="profile-switcher__avatar" aria-hidden="true">
+                    {activeProfile?.name?.charAt(0)?.toUpperCase() || '?'}
+                  </span>
+                  <span className="profile-switcher__name">{activeProfile?.name || 'Profile'}</span>
+                  <span className="profile-switcher__chevron" aria-hidden="true">▼</span>
+                </Button>
+                {showProfileMenu && (
+                  <div className="profile-switcher__menu" role="menu">
+                    {profiles.map((p) => (
+                      <button
+                        key={p.id}
+                        role="menuitem"
+                        className={clsx('profile-switcher__item', p.id === activeProfile?.id && 'is-active')}
+                        onClick={async () => {
+                          await setActiveProfile(p.id);
+                          await refreshProfiles();
+                          setShowProfileMenu(false);
+                        }}
+                        aria-selected={p.id === activeProfile?.id}
+                      >
+                        <span className="profile-switcher__item-name">{p.name}</span>
+                        {p.id === activeProfile?.id && <span className="profile-switcher__item-check" aria-hidden="true">✓</span>}
+                      </button>
+                    ))}
+                    <hr className="profile-switcher__divider" />
+                    <button
+                      role="menuitem"
+                      className="profile-switcher__item profile-switcher__item--new"
+                      onClick={() => setShowProfileMenu(false)}
+                    >
+                      <span aria-hidden="true">+</span>
+                      <span>Add new profile</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </header>
 
         <main
@@ -77,7 +133,10 @@ function App() {
           {settings?.firstLaunchComplete ? (
             <AppReady />
           ) : (
-            <FirstLaunchFlow onProfileCreated={refreshSettings} />
+            <FirstLaunchFlow onProfileCreated={async () => {
+              await refreshSettings();
+              await refreshProfiles();
+            }} />
           )}
         </main>
 
