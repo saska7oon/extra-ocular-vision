@@ -2,7 +2,6 @@
  * Tutorial — animated, interactive tutorials for each modality.
  * Features step-by-step presentation with animations, diagrams, and interactive demos.
  */
-
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { ReactElement } from 'react';
 import { Button, Card } from '../ui';
@@ -33,6 +32,147 @@ interface TutorialState {
   sectionId: string | null;
   slideIndex: number;
   completedSlides: Set<string>;
+}
+
+/** Parses markdown-like content to proper React elements */
+function FormattedContent({ content }: { content: string }): ReactElement {
+  const parseContent = (text: string) => {
+    const elements: React.ReactNode[] = [];
+    const lines = text.split('\n');
+    let inList = false;
+    let listItems: string[] = [];
+    let listType: 'bullet' | 'numbered' | null = null;
+    let inTable = false;
+    let tableRows: string[][] = [];
+
+    const flushList = () => {
+      if (listItems.length > 0) {
+        elements.push(
+          <ul key={`list-${elements.length}`} className="tutorial-list">
+            {listItems.map((item, i) => (
+              <li key={i} className="tutorial-list-item">{parseInline(item)}</li>
+            ))}
+          </ul>
+        );
+        listItems = [];
+        listType = null;
+      }
+    };
+
+    const flushTable = () => {
+      if (tableRows.length > 0 && tableRows[0]) {
+        elements.push(
+          <table key={`table-${elements.length}`} className="tutorial-table">
+            <thead>
+              <tr>{tableRows[0].map((cell, i) => <th key={i}>{parseInline(cell)}</th>)}</tr>
+            </thead>
+            <tbody>
+              {tableRows.slice(1).map((row, i) => (
+                <tr key={i}>{row.map((cell, j) => <td key={j}>{parseInline(cell)}</td>)}</tr>
+              ))}
+            </tbody>
+          </table>
+        );
+        tableRows = [];
+      }
+    };
+
+    const parseInline = (text: string): React.ReactNode => {
+      return text
+        .split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/)
+        .filter(Boolean)
+        .map((part, i) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={i}>{part.slice(2, -2)}</strong>;
+          }
+          if (part.startsWith('*') && part.endsWith('*')) {
+            return <em key={i}>{part.slice(1, -1)}</em>;
+          }
+          if (part.startsWith('`') && part.endsWith('`')) {
+            return <code key={i}>{part.slice(1, -1)}</code>;
+          }
+          return <span key={i}>{part}</span>;
+        });
+    };
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+
+      // Empty line
+      if (!trimmed) {
+        flushList();
+        flushTable();
+        continue;
+      }
+
+      // Table rows
+      if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+        flushList();
+        const cells = trimmed.slice(1, -1).split('|').map(c => c.trim());
+        // Skip separator row
+        if (!cells.every(c => c.match(/^-+$/))) {
+          tableRows.push(cells);
+        }
+        inTable = true;
+        continue;
+      } else if (inTable) {
+        flushTable();
+        inTable = false;
+      }
+
+      // Headings
+      if (trimmed.startsWith('### ')) {
+        flushList();
+        elements.push(<h3 key={elements.length} className="tutorial-h3">{parseInline(trimmed.slice(4))}</h3>);
+        continue;
+      }
+      if (trimmed.startsWith('## ')) {
+        flushList();
+        elements.push(<h2 key={elements.length} className="tutorial-h2">{parseInline(trimmed.slice(3))}</h2>);
+        continue;
+      }
+      if (trimmed.startsWith('# ')) {
+        flushList();
+        elements.push(<h1 key={elements.length} className="tutorial-h1">{parseInline(trimmed.slice(2))}</h1>);
+        continue;
+      }
+
+      // Bullet list items
+      if (trimmed.match(/^[-*+]\s/)) {
+        if (listType === 'numbered') flushList();
+        listItems.push(trimmed.slice(2));
+        listType = 'bullet';
+        inList = true;
+        continue;
+      } else if (inList && listType === 'bullet') {
+        flushList();
+        inList = false;
+      }
+
+      // Numbered lists
+      if (trimmed.match(/^\d+\.\s/)) {
+        if (listType === 'bullet') flushList();
+        listItems.push(trimmed.replace(/^\d+\.\s/, ''));
+        listType = 'numbered';
+        inList = true;
+        continue;
+      } else if (inList && listType === 'numbered') {
+        flushList();
+        inList = false;
+      }
+
+      // Regular paragraph
+      flushList();
+      elements.push(<p key={elements.length} className="tutorial-p">{parseInline(line)}</p>);
+    }
+
+    flushList();
+    flushTable();
+
+    return <div className="formatted-content">{elements}</div>;
+  };
+
+  return <>{parseContent(content)}</>;
 }
 
 export function Tutorial({
@@ -203,6 +343,7 @@ export function Tutorial({
     [profileId, absoluteDay, onSessionComplete],
   );
 
+  // Category grid view
   if (state.view === 'categories') {
     return (
       <section className="tutorial" aria-labelledby="tutorial-title">
@@ -240,6 +381,7 @@ export function Tutorial({
     );
   }
 
+  // Section list view
   if (state.view === 'section' && category) {
     const sectionProgress = category.sections.map((sec) => {
       const completedCount = sec.slides.filter((sl) => state.completedSlides.has(sl.id)).length;
@@ -290,6 +432,7 @@ export function Tutorial({
     );
   }
 
+  // Slide view
   if (state.view === 'slide' && slide && section && category) {
     return (
       <section className="tutorial tutorial-slide-view" aria-labelledby="slide-title">
@@ -338,8 +481,10 @@ export function Tutorial({
           </header>
 
           <div className="tutorial-slide-content">
-            <div className="tutorial-slide-body" dangerouslySetInnerHTML={{ __html: slide.content }} />
-            
+            <div className="tutorial-slide-body">
+              <FormattedContent content={slide.content} />
+            </div>
+
             {slide.visual && (
               <div className="tutorial-slide-visual" aria-label={`Visual aid: ${slide.visual}`}>
                 <VisualAid type={slide.visual} slide={slide} />
@@ -385,17 +530,62 @@ export function Tutorial({
 
 // Visual aid component
 function VisualAid({ type, slide }: { type: TutorialSlide['visual']; slide: TutorialSlide }): ReactElement {
+  // Determine which specific animation to show based on slide content
+  const getAnimationForSlide = (slide: TutorialSlide) => {
+    const title = slide.title.toLowerCase();
+    const content = slide.content.toLowerCase();
+
+    // Breathing-related animations
+    if (title.includes('breathing') || title.includes('cardiac coherence') ||
+        content.includes('breathing') || content.includes('cardiac coherence') ||
+        content.includes('0.1 hz') || content.includes('inhale') || content.includes('exhale')) {
+      return <BreathingAnimation />;
+    }
+
+    // Binaural-related animations
+    if (title.includes('binaural') || title.includes('brainwave') ||
+        content.includes('binaural') || content.includes('brainwave') ||
+        content.includes('alpha') || content.includes('theta') || content.includes('gamma') ||
+        content.includes('entrainment') || content.includes('hemi-sync')) {
+      return <BinauralAnimation />;
+    }
+
+    // Veil-related animations (forced choice, commitment, reveal)
+    if (title.includes('veil') || title.includes('commit') || title.includes('reveal') ||
+        content.includes('veil') || content.includes('commit') || content.includes('reveal') ||
+        content.includes('sha-256') || content.includes('commitment') ||
+        title.includes('forced choice') || title.includes('discrimination') ||
+        title.includes('contrast') || title.includes('color recognition') ||
+        title.includes('shape') || title.includes('symbol') || title.includes('text reading')) {
+      return <VeilAnimation />;
+    }
+
+    // Combined preparation flow
+    if (title.includes('combined') || title.includes('preparation') ||
+        content.includes('combined') || content.includes('preparation flow') ||
+        content.includes('heart-center') || content.includes('visualization')) {
+      return (
+        <div className="combined-animation">
+          <BreathingAnimation />
+          <BinauralAnimation />
+          <VeilAnimation />
+        </div>
+      );
+    }
+
+    // Default to veil animation for perception exercises
+    return <VeilAnimation />;
+  };
+
   switch (type) {
     case 'animation':
       return (
         <div className="visual-animation" aria-label="Animated demonstration">
           <div className="animation-demo">
             <div className="animation-frame">
-              <BreathingAnimation />
-              <BinauralAnimation />
-              <VeilAnimation />
+              {getAnimationForSlide(slide)}
             </div>
-            <p className="animation-caption">Animated demonstration: {slide.title}</p>
+            <p className="animation-caption">{slide.title}</p>
           </div>
         </div>
       );
