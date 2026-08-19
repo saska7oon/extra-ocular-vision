@@ -5,14 +5,15 @@
  * - Proper disabled state (aria-disabled for screen readers)
  * - Focus-visible styling
  * - Full keyboard support (Enter, Space)
- * - Variant classes for styling: primary, secondary, outline, danger
+ * - Variant classes for styling: primary, secondary, outline, danger, ghost, success
+ * - Size modifiers: sm, md, lg, xl
  */
 
 import { type ButtonHTMLAttributes } from 'react';
 import { clsx } from '../utils/clsx';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** Visual variant. */

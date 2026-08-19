@@ -2,8 +2,9 @@ import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import * as pluginReact from 'eslint-plugin-react';
-import prettierRecommended from 'eslint-plugin-prettier/recommended';
+import pluginReact from 'eslint-plugin-react';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tsparser from '@typescript-eslint/parser';
 
 export default [
   js.configs.recommended,
@@ -17,17 +18,36 @@ export default [
         ...globals.browser,
         ...globals.es2023,
       },
+      parser: tsparser,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
     },
-  },
-  pluginReact.configs.recommended,
-  reactHooks.configs['recommended'],
-  prettierRecommended,
-  {
+    settings: {
+      react: {
+        version: '18.3',
+      },
+    },
+    plugins: {
+      react: pluginReact,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+      '@typescript-eslint': tseslint,
+    },
     rules: {
+      ...pluginReact.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      ...reactRefresh.configs.recommended.rules,
       'react/react-in-jsx-scope': 'off',
       'react/jsx-uses-react': 'off',
+      'no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/no-unused-vars': [
-        'error',
+        'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
     },

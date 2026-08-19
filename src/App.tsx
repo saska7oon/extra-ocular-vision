@@ -15,6 +15,12 @@ import { useEffect, useState, type FormEvent, type ReactElement } from 'react';
 import { useAppSettings, useTheme, useCreateProfile, useProfiles } from './hooks';
 import { MainApp } from './MainApp';
 
+/** Type for the beforeinstallprompt event */
+interface BeforeInstallPromptEvent extends Event {
+  readonly prompt: () => Promise<void>;
+  readonly userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+}
+
 function App() {
   const { settings, isLoading, refresh: refreshSettings } = useAppSettings();
   const { resolvedTheme } = useTheme();
@@ -27,13 +33,13 @@ function App() {
       // The installation state is tracked so we can adjust UI if needed.
       void e;
     };
-    window.addEventListener('beforeinstallprompt', handler as EventListener);
+    window.addEventListener('beforeinstallprompt', handler);
 
     const installedHandler = () => setPwaInstalled(true);
     window.addEventListener('appinstalled', installedHandler);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handler as EventListener);
+      window.removeEventListener('beforeinstallprompt', handler);
       window.removeEventListener('appinstalled', installedHandler);
     };
   }, []);

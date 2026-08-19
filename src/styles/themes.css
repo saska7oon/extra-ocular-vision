@@ -25,48 +25,97 @@
   --space-3xl: 3.5rem;
 
   /* Border radius */
-  --radius-sm: 0.25rem;
+  --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
   --radius-full: 9999px;
 
   /* Focus ring (shared across themes for keyboard accessibility) */
   --focus-ring-width: 0.25rem;
   --focus-ring-offset: 0.125rem;
+
+  /* Transition tokens */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 350ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Shadow tokens */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-glow: 0 0 20px rgb(var(--color-accent) / 0.3);
+  --shadow-glow-lg: 0 0 40px rgb(var(--color-accent) / 0.4);
+
+  /* Glass/backdrop tokens */
+  --glass-bg: rgb(var(--color-bg-elevated) / 0.7);
+  --glass-border: rgb(var(--color-border) / 0.3);
+  --glass-blur: blur(16px);
+
+  /* Animation keyframes */
+  --pulse-duration: 2s;
+  --shimmer-duration: 2s;
 }
 
 /* --- Light theme --- */
 :root[data-theme='light'] {
   --color-bg: 255 255 255;
   --color-bg-alt: 248 249 250;
-  --color-bg-elevated: 241 242 244;
-  --color-text: 17 17 17;
-  --color-text-secondary: 82 82 82;
-  --color-border: 217 217 228;
+  --color-bg-elevated: 255 255 255;
+  --color-text: 15 23 42;
+  --color-text-secondary: 100 116 139;
+  --color-text-muted: 148 163 184;
+  --color-border: 226 232 240;
   --color-accent: 37 99 235;
   --color-accent-hover: 29 78 216;
+  --color-accent-light: 219 234 254;
   --color-accent-contrast: 255 255 255;
   --color-error: 220 38 38;
-  --color-warning: 217 119 0;
-  --color-success: 22 163 70;
+  --color-error-light: 254 226 226;
+  --color-warning: 217 119 6;
+  --color-warning-light: 254 243 199;
+  --color-success: 22 163 74;
+  --color-success-light: 220 252 231;
   --color-blind-safe: 1;
+
+  /* Glass variants for light */
+  --glass-bg: 255 255 255 / 0.8;
+  --glass-border: 226 232 240 / 0.5;
 }
 
 /* --- Dark theme (for blindfolded use) --- */
 :root[data-theme='dark'] {
-  --color-bg: 13 13 21;
-  --color-bg-alt: 18 18 26;
-  --color-bg-elevated: 22 22 32;
-  --color-text: 227 227 237;
-  --color-text-secondary: 160 160 176;
-  --color-border: 48 48 64;
+  --color-bg: 8 8 16;
+  --color-bg-alt: 15 15 25;
+  --color-bg-elevated: 22 22 36;
+  --color-text: 241 245 249;
+  --color-text-secondary: 148 163 184;
+  --color-text-muted: 100 116 139;
+  --color-border: 30 30 50;
   --color-accent: 96 165 250;
   --color-accent-hover: 144 193 255;
-  --color-accent-contrast: 13 13 21;
+  --color-accent-light: 30 58 138;
+  --color-accent-contrast: 8 8 16;
   --color-error: 248 113 113;
+  --color-error-light: 127 29 29;
   --color-warning: 251 146 60;
+  --color-warning-light: 133 77 14;
   --color-success: 74 222 128;
+  --color-success-light: 20 83 45;
   --color-blind-safe: 1;
+
+  /* Glowing accents for dark theme */
+  --shadow-glow: 0 0 30px rgb(96 165 250 / 0.4);
+  --shadow-glow-lg: 0 0 60px rgb(96 165 250 / 0.5);
+
+  /* Glass variants for dark */
+  --glass-bg: 22 22 36 / 0.8;
+  --glass-border: 30 30 50 / 0.5;
 }
 
 /* --- High contrast overrides (accessibility mode) --- */
@@ -76,4 +125,26 @@
   --color-accent: 255 255 0;
   --color-accent-contrast: 0 0 0;
   --color-border: 255 255 255;
+  --glass-bg: 0 0 0;
+  --glass-border: 255 255 255;
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0.01ms;
+    --duration-normal: 0.01ms;
+    --duration-slow: 0.01ms;
+    --pulse-duration: 0.01ms;
+    --shimmer-duration: 0.01ms;
+  }
+}
+
+/* --- Print styles --- */
+@media print {
+  :root {
+    --color-bg: 255 255 255;
+    --color-text: 0 0 0;
+    --color-border: 200 200 200;
+  }
 }

@@ -307,10 +307,10 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
         <Card asArticle className="journal-view">
           <h2>Training Journal</h2>
           <p>
-            Reflect on today's session — what you sensed, what state you were
+            Reflect on today&apos;s session — what you sensed, what state you were
             in, anything that stood out.
           </p>
-          <label htmlFor="journal-input">Today's reflection</label>
+          <label htmlFor="journal-input">Today&apos;s reflection</label>
           <textarea
             id="journal-input"
             value={journalText}

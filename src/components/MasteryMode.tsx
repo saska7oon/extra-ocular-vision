@@ -161,7 +161,7 @@ export function MasteryMode({ profileId }: MasteryModeProps): ReactElement {
       <h2>Phase 8: Sustained Practice & Mastery</h2>
       <p>
         Your ongoing practice, honestly measured against chance. Reaching
-        "mastered" means your recent accuracy is statistically above chance,
+        &ldquo;mastered&rdquo; means your recent accuracy is statistically above chance,
         not that any ability is certified.
       </p>
 
@@ -208,7 +208,7 @@ export function MasteryMode({ profileId }: MasteryModeProps): ReactElement {
       )}
 
       <p className="honesty-note">
-        "Practice more" opens a fresh perceptual session. All data stays local.
+        &ldquo;Practice more&rdquo; opens a fresh perceptual session. All data stays local.
       </p>
     </Card>
   );
