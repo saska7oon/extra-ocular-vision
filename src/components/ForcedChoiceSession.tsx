@@ -44,7 +44,7 @@ export function ForcedChoiceSession({
   const engineRef = useRef<ForcedChoiceEngine | null>(null);
 
   const [number, setNumber] = useState(0); // 0 = not started
-  const [stage, setStage] = useState<'choices' | 'revealed' | 'done'>('choices');
+  const [stage, setStage] = useState<'choices' | 'veil' | 'revealed' | 'done'>('choices');
   const [selected, setSelected] = useState<string | null>(null);
   const [reveal, setReveal] = useState<{
     target: string;
@@ -97,7 +97,7 @@ export function ForcedChoiceSession({
       correct: r.correct,
       valid: r.commitmentValid,
     });
-    setStage('revealed');
+    setStage('veil'); // Show veil descending
     setScore((s) => ({
       correct: s.correct + (r.correct ? 1 : 0),
       total: s.total + 1,
@@ -185,85 +185,134 @@ export function ForcedChoiceSession({
   }
 
   return (
-    <Card asArticle className="fc-session">
-      <header className="fc-header">
-        <h2>{config.exerciseType} — Phase {config.phaseId}</h2>
-        <span className="fc-progress">
-          Round {number} / {config.roundsPerSession}
-        </span>
-      </header>
+      <Card asArticle className="fc-session">
+        <header className="fc-header">
+          <h2>{config.exerciseType} — Phase {config.phaseId}</h2>
+          <span className="fc-progress">
+            Round {number} / {config.roundsPerSession}
+          </span>
+        </header>
 
-      {/* Blind target area (nothing real shown before commit) */}
-      <div className="fc-blind" aria-label="Perceive the hidden target">
-        <div
-          className={clsx('blind-disc', stage === 'revealed' ? 'is-revealed' : '')}
-          aria-hidden="true"
-        />
-        <p className="fc-blind-hint">
-          {stage === 'choices'
-            ? 'Perceive the target with your inner sense, then commit.'
-            : reveal ? `You sensed: ${reveal.target}` : ''}
-        </p>
-      </div>
-
-      {/* Choices (hidden after reveal) */}
-      {stage === 'choices' && (
-        <>
-          <div className="fc-choices" role="group" aria-label="Choose the target">
-            {choices.map((c) => (
-              <button
-                key={c.key}
-                type="button"
-                className={clsx('fc-choice', selected === c.key ? 'is-selected' : '')}
-                onClick={() => setSelected(c.key)}
-              >
-                {c.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="fc-confidence">
-            <label htmlFor="fc-confidence">Confidence (1-5)</label>
-            <input
-              id="fc-confidence"
-              type="range"
-              min={1}
-              max={5}
-              value={confidence}
-              onChange={(e) => setConfidence(Number(e.target.value))}
-            />
-            <span>{confidence}/5</span>
-          </div>
-
-          <div className="fc-actions">
-            <Button variant="primary" onClick={() => void handleCommit()} disabled={!selected}>
-              Commit answer
-            </Button>
-          </div>
-        </>
-      )}
-
-      {/* Reveal */}
-      {stage === 'revealed' && reveal && (
-        <div className="fc-reveal" role="status">
-          <p className={clsx('reveal-result', reveal.correct ? 'is-correct' : 'is-wrong')}>
-            {reveal.correct ? '✓ Correct' : '✗ Not correct'}
-          </p>
-          <p>
-            Target was <strong>{reveal.target}</strong>.
-          </p>
-          <p className="commit-valid">
-            {reveal.valid ? '🔒 Commitment verified' : '⚠ Commitment mismatch'}
-          </p>
-          <div className="fc-actions">
-            <Button variant="primary" onClick={handleNext}>
-              Next round
-            </Button>
+        {/* Target area with veil metaphor */}
+        <div className="fc-target-area" aria-label="Target perception area">
+          <div className="fc-veil-container">
+            {/* The target is always rendered but covered by veil */}
+            <div className="fc-target" aria-hidden="true">
+              {reveal && <span className="fc-target-label">{reveal.target}</span>}
+              {!reveal && stage !== 'choices' && <span className="fc-target-placeholder">?</span>}
+            </div>
+          
+            {/* The veil - covers target during choices, lifts on commit */}
+            <div 
+              className={clsx('fc-veil', {
+                'is-lowered': stage === 'choices',
+                'is-lifting': stage === 'veil',
+                'is-raised': stage === 'revealed' || stage === 'done',
+              })}
+              aria-hidden="true"
+            >
+              <div className="fc-veil-fabric" />
+              <div className="fc-veil-hem" />
+            </div>
           </div>
         </div>
-      )}
-    </Card>
-  );
+
+        {stage === 'choices' && (
+            <p className="fc-blind-hint">
+              Perceive the target behind the veil with your inner sense, then commit.
+            </p>
+          )}
+
+          {stage === 'veil' && (
+            <p className="fc-blind-hint">
+              The veil lifts... the target was there all along.
+            </p>
+          )}
+
+          {stage === 'revealed' && reveal && (
+            <p className="fc-blind-hint">
+              Target was <strong>{reveal.target}</strong>.
+            </p>
+          )}
+
+        {/* Choices (hidden after commit) */}
+        {stage === 'choices' && (
+          <>
+            <div className="fc-choices" role="group" aria-label="Choose the target">
+              {choices.map((c) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  className={clsx('fc-choice', selected === c.key ? 'is-selected' : '')}
+                  onClick={() => setSelected(c.key)}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="fc-confidence">
+              <label htmlFor="fc-confidence">Confidence (1-5)</label>
+              <input
+                id="fc-confidence"
+                type="range"
+                min={1}
+                max={5}
+                value={confidence}
+                onChange={(e) => setConfidence(Number(e.target.value))}
+              />
+              <span>{confidence}/5</span>
+            </div>
+
+            <div className="fc-actions">
+              <Button variant="primary" onClick={() => void handleCommit()} disabled={!selected}>
+                Commit answer
+              </Button>
+            </div>
+          </>
+        )}
+
+        {/* Veil lifting animation stage */}
+        {stage === 'veil' && reveal && (
+          <div className="fc-reveal" role="status">
+            <p className={clsx('reveal-result', reveal.correct ? 'is-correct' : 'is-wrong')}>
+              {reveal.correct ? '✓ Correct' : '✗ Not correct'}
+            </p>
+            <p>
+              Target was <strong>{reveal.target}</strong>.
+            </p>
+            <p className={clsx('commit-valid', reveal.valid && 'is-verified')}>
+              {reveal.valid ? '🔒 Commitment verified' : '⚠ Commitment mismatch'}
+            </p>
+            <div className="fc-actions">
+              <Button variant="primary" onClick={handleNext}>
+                Next round
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Reveal stage (after veil lifted) */}
+        {stage === 'revealed' && reveal && (
+          <div className="fc-reveal" role="status">
+            <p className={clsx('reveal-result', reveal.correct ? 'is-correct' : 'is-wrong')}>
+              {reveal.correct ? '✓ Correct' : '✗ Not correct'}
+            </p>
+            <p>
+              Target was <strong>{reveal.target}</strong>.
+            </p>
+            <p className={clsx('commit-valid', reveal.valid && 'is-verified')}>
+              {reveal.valid ? '🔒 Commitment verified' : '⚠ Commitment mismatch'}
+            </p>
+            <div className="fc-actions">
+              <Button variant="primary" onClick={handleNext}>
+                Next round
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
+    );
 }
 
 export default ForcedChoiceSession;
