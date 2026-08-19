@@ -495,18 +495,18 @@ export async function detectHeadphones(
   // Heuristic 2: audio context latency.
   try {
     const latency = ctx.baseLatency ?? 0;
-    // No baseLatency reported often correlates with headphone output.
-    if (latency === 0) {
+    // Low or zero baseLatency often correlates with headphone output (direct path).
+    // Higher latency correlates with speaker output (system audio path).
+    if (latency === 0 || latency < 0.01) {
       return {
-        connected: false,
-        reason:
-          'Latency unmeasurable — cannot confirm headphones. Please verify.',
-        checkable: false,
+        connected: true,
+        reason: 'Low audio latency detected — headphones likely connected.',
+        checkable: true,
       };
     }
     return {
-      connected: true,
-      reason: `Audio latency ${latency.toFixed(4)}s detected. Headphones recommended for binaural effect.`,
+      connected: false,
+      reason: `Audio latency ${latency.toFixed(4)}s detected — likely speaker output. Headphones recommended for binaural effect.`,
       checkable: true,
     };
   } catch {
