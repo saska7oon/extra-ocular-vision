@@ -1683,6 +1683,52 @@
 }
 
 /* =====================================================================
+ * Forced Choice Session - Visual Targets
+ * ===================================================================== */
+
+.fc-visual-target {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: rgb(var(--color-accent-contrast));
+  text-shadow: 0 2px 4px rgb(0 0 0 / 0.3);
+  box-shadow: 
+    0 4px 12px rgb(0 0 0 / 0.2),
+    inset 0 1px 0 rgb(255 255 255 / 0.1);
+}
+
+.fc-visual-color {
+  border: 3px solid rgb(var(--color-border));
+}
+
+.fc-visual-shape {
+  color: rgb(var(--color-accent));
+}
+
+.fc-visual-symbol {
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+  background: linear-gradient(135deg, rgb(var(--color-bg-elevated)) 0%, rgb(var(--color-bg)) 100%);
+  border: 2px solid rgb(var(--color-accent) / 0.3);
+}
+
+.fc-visual-text {
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: linear-gradient(135deg, rgb(var(--color-bg-elevated)) 0%, rgb(var(--color-bg)) 100%);
+  border: 2px solid rgb(var(--color-accent) / 0.3);
+  padding: var(--space-md);
+  text-align: center;
+}
+
+/* =====================================================================
  * Phase Selector / Phase Gym
  * ===================================================================== */
 
@@ -3379,4 +3425,50 @@
   max-width: 40ch;
   margin: 0 auto var(--space-lg);
   line-height: 1.6;
+}
+
+/* =====================================================================
+ * Forced Choice Session - Visual Targets
+ * ===================================================================== */
+
+.fc-visual-target {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  color: rgb(var(--color-accent-contrast));
+  text-shadow: 0 2px 4px rgb(0 0 0 / 0.3);
+  box-shadow: 
+    0 4px 12px rgb(0 0 0 / 0.2),
+    inset 0 1px 0 rgb(255 255 255 / 0.1);
+}
+
+.fc-visual-color {
+  border: 3px solid rgb(var(--color-border));
+}
+
+.fc-visual-shape {
+  color: rgb(var(--color-accent));
+}
+
+.fc-visual-symbol {
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+  background: linear-gradient(135deg, rgb(var(--color-bg-elevated)) 0%, rgb(var(--color-bg)) 100%);
+  border: 2px solid rgb(var(--color-accent) / 0.3);
+}
+
+.fc-visual-text {
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: linear-gradient(135deg, rgb(var(--color-bg-elevated)) 0%, rgb(var(--color-bg)) 100%);
+  border: 2px solid rgb(var(--color-accent) / 0.3);
+  padding: var(--space-md);
+  text-align: center;
 }
