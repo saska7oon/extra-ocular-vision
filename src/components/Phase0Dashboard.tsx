@@ -19,6 +19,39 @@ import type {
   Phase0DayView,
 } from '../features/phase0/types';
 import { Phase0SessionCard } from './Phase0SessionCard';
+import {
+  MODALITY_BREATHING,
+  MODALITY_BINAURAL,
+  MODALITY_COMBINED,
+} from '../features/modalities';
+
+function ModalityInfoCard({ modality }: { modality: typeof MODALITY_BREATHING }) {
+  return (
+    <Card asArticle className="modality-info-card">
+      <div className="modality-info-header">
+        <span className="modality-info-icon" aria-hidden="true">{modality.icon}</span>
+        <div>
+          <h3>{modality.name}</h3>
+          <span className="modality-info-phase">Foundation Phase</span>
+        </div>
+      </div>
+      <p className="modality-info-purpose">{modality.purpose}</p>
+      <p className="modality-info-goal"><strong>Goal:</strong> {modality.goal}</p>
+      <details className="modality-info-details">
+        <summary>Research Basis</summary>
+        <p>{modality.researchBasis}</p>
+      </details>
+      <details className="modality-info-details">
+        <summary>Protocol</summary>
+        <ol>
+          {modality.protocol.map((step, i) => (
+            <li key={i}>{step}</li>
+          ))}
+        </ol>
+      </details>
+    </Card>
+  );
+}
 
 interface Phase0DashboardProps {
   profileId: string;
@@ -195,6 +228,16 @@ export function Phase0Dashboard({
           <p>🎉 Phase 1 unlocked! All 7 foundation days completed.</p>
         </div>
       )}
+
+      {/* Modality explanations for each day */}
+      <section className="modality-explanations" aria-labelledby="modality-explanations-title">
+        <h3 id="modality-explanations-title" className="visually-hidden">Foundation Phase Modalities</h3>
+        <div className="modality-info-grid">
+          <ModalityInfoCard modality={MODALITY_BREATHING} />
+          <ModalityInfoCard modality={MODALITY_BINAURAL} />
+          <ModalityInfoCard modality={MODALITY_COMBINED} />
+        </div>
+      </section>
 
       {/* Day grid */}
       <div className="day-grid" role="table" aria-label="Phase 0 curriculum days">

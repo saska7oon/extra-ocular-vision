@@ -21,6 +21,7 @@ import { AccuracyDashboard } from './components/AccuracyDashboard';
 import { SensoryProfile } from './components/SensoryProfile';
 import { PhaseGym, PHASE_TITLES } from './components/PhaseGym';
 import { FreeResponseSession } from './components/FreeResponseSession';
+import { FreePlay } from './components/FreePlay';
 import { MasteryMode } from './components/MasteryMode';
 import { BUILTIN_CATEGORIES } from './features/judging/templates';
 import { BreathingGuide } from './components/BreathingGuide';
@@ -36,7 +37,8 @@ type View =
   | 'phases'
   | 'phase'
   | 'free'
-  | 'mastery';
+  | 'mastery'
+  | 'freeplay';
 
 /**
  * Map a Phase 0 day (1-7) to its session type, matching
@@ -172,6 +174,12 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
           Home
         </Button>
         <Button
+          variant={view === 'freeplay' ? 'primary' : 'outline'}
+          onClick={() => setView('freeplay')}
+        >
+          Free Play
+        </Button>
+        <Button
           variant={view === 'stats' ? 'primary' : 'outline'}
           onClick={() => setView('stats')}
         >
@@ -302,6 +310,14 @@ export function MainApp({ profileId }: MainAppProps): ReactElement {
       )}
 
       {view === 'mastery' && <MasteryMode profileId={profileId} />}
+
+      {view === 'freeplay' && (
+        <FreePlay
+          profileId={profileId}
+          absoluteDay={absoluteDay}
+          onSessionComplete={handleSessionComplete}
+        />
+      )}
 
       {view === 'journal' && (
         <Card asArticle className="journal-view">
