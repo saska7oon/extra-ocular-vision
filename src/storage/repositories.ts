@@ -34,6 +34,16 @@ import type {
 } from '../features/phase0/types';
 import { uuid4 } from '../utils/crypto';
 
+const DEFAULT_PREFERENCES: UserPreferences = {
+  theme: 'dark',
+  accessibilityMode: 'standard',
+  audioEnabled: true,
+  showSkepticismWarnings: true,
+  strictRigor: true,
+  voiceSpeed: 1.0,
+  entrainmentEnabled: false,
+};
+
 /* ==========================================================================
  * Profile Repository
  * ========================================================================== */
@@ -100,8 +110,47 @@ export class ProfileRepository {
     await this.db.profiles.where('id').equals(id).delete();
   }
 
+  /** Delete a profile AND all its associated data. */
+  async deleteProfile(profileId: string): Promise<void> {
+    // Delete in sequence (Dexie transaction has table limit)
+    await this.db.profiles.where('id').equals(profileId).delete();
+    await this.db.sessions.where('profileId').equals(profileId).delete();
+    await this.db.exerciseRounds.where('profileId').equals(profileId).delete();
+    await this.db.curriculumProgress.where('profileId').equals(profileId).delete();
+    await this.db.tierProgression.where('profileId').equals(profileId).delete();
+    await this.db.targetChains.where('profileId').equals(profileId).delete();
+    await this.db.integrityAudits.where('sessionId').equals(profileId).delete();
+    await this.db.statistics.where('profileId').equals(profileId).delete();
+    await this.db.journal.where('profileId').equals(profileId).delete();
+    await this.db.phase0Sessions.where('profileId').equals(profileId).delete();
+    await this.db.phase0Progress.where('profileId').equals(profileId).delete();
+    await this.db.templates.where('profileId').equals(profileId).delete();
+    await this.db.judgingResults.where('profileId').equals(profileId).delete();
+  }
+
   async touch(id: string): Promise<number> {
     return this.db.profiles.update(id, { lastActiveAt: Date.now() });
+  }
+
+  /** Reset all training data for a profile (keeps the profile itself). */
+  async resetProfileData(profileId: string): Promise<void> {
+    await this.db.sessions.where('profileId').equals(profileId).delete();
+    await this.db.exerciseRounds.where('profileId').equals(profileId).delete();
+    await this.db.curriculumProgress.where('profileId').equals(profileId).delete();
+    await this.db.tierProgression.where('profileId').equals(profileId).delete();
+    await this.db.targetChains.where('profileId').equals(profileId).delete();
+    await this.db.integrityAudits.where('sessionId').equals(profileId).delete();
+    await this.db.statistics.where('profileId').equals(profileId).delete();
+    await this.db.journal.where('profileId').equals(profileId).delete();
+    await this.db.phase0Sessions.where('profileId').equals(profileId).delete();
+    await this.db.phase0Progress.where('profileId').equals(profileId).delete();
+    await this.db.templates.where('profileId').equals(profileId).delete();
+    await this.db.judgingResults.where('profileId').equals(profileId).delete();
+    // Reset profile preferences to defaults
+    await this.db.profiles.update(profileId, {
+      preferences: DEFAULT_PREFERENCES,
+      lastActiveAt: Date.now(),
+    });
   }
 }
 

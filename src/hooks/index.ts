@@ -282,6 +282,93 @@ export function useUpdatePreferences(): MutationResult<boolean> & {
   return { data, error, isPending, update };
 }
 
+/** Reset all training data for the active profile (keeps the profile itself). */
+export function useResetActiveProfileData(): MutationResult<boolean> & {
+  reset: () => Promise<boolean>;
+} {
+  const repos = useDatabase();
+  const [data, setData] = useState<boolean | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [isPending, setIsPending] = useState(false);
+
+  const reset = useCallback(async (): Promise<boolean> => {
+    if (!repos) {
+      setError(new Error('Database not available'));
+      return false;
+    }
+    const active = await repos.profiles.getActive();
+    if (!active) {
+      setError(new Error('No active profile'));
+      return false;
+    }
+    setIsPending(true);
+    setError(null);
+    try {
+      // Use the repository's reset method
+      await repos.profiles.resetProfileData(active.id);
+      setData(true);
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(String(err)));
+      return false;
+    } finally {
+      setIsPending(false);
+    }
+  }, [repos]);
+
+  return { data, error, isPending, reset };
+}
+
+/** Delete a profile AND all its data. */
+export function useDeleteProfile(): MutationResult<boolean> & {
+  deleteProfile: (profileId: string) => Promise<boolean>;
+} {
+  const repos = useDatabase();
+  const [data, setData] = useState<boolean | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [isPending, setIsPending] = useState(false);
+
+  const deleteProfile = useCallback(
+    async (profileId: string): Promise<boolean> => {
+      if (!repos) {
+        setError(new Error('Database not available'));
+        return false;
+      }
+      // Prevent deleting the last remaining profile
+      const allProfiles = await repos.profiles.list();
+      if (allProfiles.length <= 1) {
+        setError(new Error('Cannot delete the only remaining profile'));
+        return false;
+      }
+      setIsPending(true);
+      setError(null);
+      try {
+        await repos.profiles.deleteProfile(profileId);
+        // If we deleted the active profile, switch to another
+        const active = await repos.profiles.getActive();
+        if (!active) {
+          const remaining = await repos.profiles.list();
+          if (remaining.length > 0) {
+            const nextProfile = remaining[0]!;
+            await repos.profiles.setActive(nextProfile.id);
+            await repos.settings.setActiveProfileId(nextProfile.id);
+          }
+        }
+        setData(true);
+        return true;
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error(String(err)));
+        return false;
+      } finally {
+        setIsPending(false);
+      }
+    },
+    [repos],
+  );
+
+  return { data, error, isPending, deleteProfile };
+}
+
 /* ==========================================================================
  * Curriculum hooks
  * ========================================================================== */

@@ -12,7 +12,7 @@
  */
 
 import { useEffect, useState, type FormEvent, type ReactElement } from 'react';
-import { useAppSettings, useTheme, useCreateProfile, useProfiles, useSetActiveProfile } from './hooks';
+import { useAppSettings, useTheme, useCreateProfile, useProfiles, useSetActiveProfile, useResetActiveProfileData, useDeleteProfile } from './hooks';
 import { MainApp } from './MainApp';
 import { Button } from './ui';
 import { clsx } from './utils/clsx';
@@ -29,6 +29,8 @@ function App() {
   const [, setPwaInstalled] = useState(false);
   const { profiles, activeProfile, refresh: refreshProfiles } = useProfiles();
   const { activate: setActiveProfile } = useSetActiveProfile();
+  const { reset: resetActiveProfileData, isPending: isResetting } = useResetActiveProfileData();
+  const { deleteProfile, isPending: isDeleting } = useDeleteProfile();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // Handle PWA install prompt (deferred).
@@ -116,6 +118,38 @@ function App() {
                     >
                       <span aria-hidden="true">+</span>
                       <span>Add new profile</span>
+                    </button>
+                    <hr className="profile-switcher__divider" />
+                    <button
+                      role="menuitem"
+                      className="profile-switcher__item profile-switcher__item--reset"
+                      onClick={async () => {
+                        if (window.confirm('Reset all training data for this profile? This cannot be undone.')) {
+                          await resetActiveProfileData();
+                          await refreshProfiles();
+                          setShowProfileMenu(false);
+                        }
+                      }}
+                      disabled={isResetting}
+                    >
+                      <span aria-hidden="true">↻</span>
+                      <span>{isResetting ? 'Resetting...' : 'Reset profile data'}</span>
+                    </button>
+                    <button
+                      role="menuitem"
+                      className="profile-switcher__item profile-switcher__item--delete"
+                      onClick={async () => {
+                        if (!activeProfile) return;
+                        if (window.confirm(`Delete profile "${activeProfile.name}" and ALL its data? This cannot be undone.`)) {
+                          await deleteProfile(activeProfile.id);
+                          await refreshProfiles();
+                          setShowProfileMenu(false);
+                        }
+                      }}
+                      disabled={isDeleting}
+                    >
+                      <span aria-hidden="true">🗑</span>
+                      <span>{isDeleting ? 'Deleting...' : 'Delete profile'}</span>
                     </button>
                   </div>
                 )}
