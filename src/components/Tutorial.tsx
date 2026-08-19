@@ -866,15 +866,31 @@ function InteractiveDiagram({ slide }: { slide: TutorialSlide }): ReactElement {
     <div className="interactive-diagram">
       <p className="diagram-title">{slide.title}</p>
       <div className="diagram-content">
-        <p>Interactive diagram for: {slide.title}</p>
         <div className="diagram-placeholder-svg">
-          <svg viewBox="0 0 400 200" className="diagram-svg">
-            <rect x="50" y="50" width="100" height="100" rx="10" fill="rgb(var(--color-accent) / 0.2)" stroke="rgb(var(--color-accent))" strokeWidth="2" />
-            <circle cx="250" cy="100" r="50" fill="rgb(var(--color-success) / 0.2)" stroke="rgb(var(--color-success))" strokeWidth="2" />
-            <polygon points="350,50 400,150 300,150" fill="rgb(var(--color-warning) / 0.2)" stroke="rgb(var(--color-warning))" strokeWidth="2" />
-            <text x="50" y="30" fill="rgb(var(--color-text-muted))" fontFamily="var(--font-mono)" fontSize="12">Shape Discrimination</text>
-            <text x="250" y="30" fill="rgb(var(--color-text-muted))" fontFamily="var(--font-mono)" fontSize="12">Center Pulling</text>
-            <text x="350" y="30" fill="rgb(var(--color-text-muted))" fontFamily="var(--font-mono)" fontSize="12">Edge Sensing</text>
+          <svg viewBox="0 0 400 220" className="diagram-svg" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <linearGradient id="diagGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="rgb(var(--color-accent) / 0.2)" />
+                <stop offset="100%" stopColor="rgb(var(--color-accent) / 0.05)" />
+              </linearGradient>
+              <linearGradient id="diagGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="rgb(var(--color-success) / 0.2)" />
+                <stop offset="100%" stopColor="rgb(var(--color-success) / 0.05)" />
+              </linearGradient>
+              <linearGradient id="diagGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="rgb(var(--color-warning) / 0.2)" />
+                <stop offset="100%" stopColor="rgb(var(--color-warning) / 0.05)" />
+              </linearGradient>
+            </defs>
+            <rect x="30" y="60" width="100" height="100" rx="12" fill="url(#diagGrad1)" stroke="rgb(var(--color-accent))" strokeWidth="2" />
+            <circle cx="280" cy="110" r="55" fill="url(#diagGrad2)" stroke="rgb(var(--color-success))" strokeWidth="2" />
+            <polygon points="360,50 400,165 300,165" fill="url(#diagGrad3)" stroke="rgb(var(--color-warning))" strokeWidth="2" />
+            <text x="30" y="40" fill="rgb(var(--color-text-muted))" fontFamily="var(--font-mono)" fontSize="11">Shape Discrimination</text>
+            <text x="230" y="40" fill="rgb(var(--color-text-muted))" fontFamily="var(--font-mono)" fontSize="11">Center Pulling</text>
+            <text x="320" y="40" fill="rgb(var(--color-text-muted))" fontFamily="var(--font-mono)" fontSize="11">Edge Sensing</text>
+            {/* Connection lines */}
+            <line x1="130" y1="110" x2="225" y2="110" stroke="rgb(var(--color-border))" strokeWidth="1" strokeDasharray="4,4" />
+            <line x1="280" y1="165" x2="315" y2="130" stroke="rgb(var(--color-border))" strokeWidth="1" strokeDasharray="4,4" />
           </svg>
         </div>
       </div>

@@ -4161,3 +4161,212 @@
   line-height: 1.5;
   margin: 0;
 }
+
+/* =====================================================================
+ * Tutorial Visual Aid Containers
+ * ===================================================================== */
+
+.tutorial-slide-visual {
+  margin: var(--space-xl) 0;
+  padding: var(--space-lg);
+  background: rgb(var(--color-bg-alt));
+  border: 1px solid rgb(var(--color-border) / 0.3);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.visual-animation,
+.visual-diagram,
+.visual-video,
+.visual-interactive {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.animation-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.animation-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  width: 100%;
+  max-width: 600px;
+}
+
+.animation-caption {
+  font-size: var(--font-size-sm);
+  color: rgb(var(--color-text-secondary));
+  text-align: center;
+  font-style: italic;
+}
+
+.diagram-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.interactive-diagram {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.diagram-svg {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+}
+
+.video-player {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.video-frame {
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 16/9;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: rgb(var(--color-bg-alt));
+  border: 2px solid rgb(var(--color-border));
+}
+
+.video-placeholder-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  cursor: pointer;
+  transition: background-color var(--duration-normal) var(--ease-out);
+}
+
+.video-placeholder-content:hover {
+  background: rgb(var(--color-bg-elevated));
+}
+
+.play-button {
+  width: 80px;
+  height: 80px;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.video-placeholder-content:hover .play-button {
+  transform: scale(1.1);
+}
+
+.video-meta {
+  font-size: var(--font-size-sm);
+  color: rgb(var(--color-text-muted));
+  font-family: var(--font-mono);
+}
+
+.video-caption {
+  font-size: var(--font-size-sm);
+  color: rgb(var(--color-text-secondary));
+  text-align: center;
+}
+
+.interactive-element {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.interactive-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: rgb(var(--color-text));
+  margin-bottom: var(--space-md);
+  text-align: center;
+}
+
+.interactive-demo {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Visual aid wrapper */
+.tutorial-interactive-wrapper {
+  margin-top: var(--space-lg);
+  padding: var(--space-lg);
+  background: rgb(var(--color-bg-alt));
+  border-radius: var(--radius-xl);
+  border: 1px solid rgb(var(--color-border) / 0.3);
+}
+
+.tutorial-interactive-wrapper h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: rgb(var(--color-text));
+  margin-bottom: var(--space-md);
+}
+
+.tutorial-interactive {
+  min-height: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tutorial-slide-visual {
+    padding: var(--space-md);
+    margin: var(--space-lg) calc(-1 * var(--space-lg));
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  
+  .animation-frame,
+  .diagram-container,
+  .interactive-diagram,
+  .video-player,
+  .interactive-element {
+    max-width: 100%;
+  }
+  
+  .breathing-animation {
+    padding: var(--space-md);
+  }
+  
+  .breathing-circle {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .binaural-animation {
+    height: auto;
+    min-height: 250px;
+    padding: var(--space-md);
+  }
+  
+  .binaural-waves {
+    height: 250px;
+  }
+  
+  .veil-animation {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+  }
+  
+  .veil-explanation {
+    font-size: var(--font-size-sm);
+  }
+  
+  .veil-step {
+    font-size: var(--font-size-sm) !important;
+    margin: var(--space-xs) 0 !important;
+  }
+}
