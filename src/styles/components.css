@@ -4071,3 +4071,93 @@
   border-radius: var(--radius-xl);
   border: 1px dashed rgb(var(--color-border));
 }
+
+/* =====================================================================
+ * Phase Gym - Tier Info Panel
+ * ===================================================================== */
+
+.tier-info-toggle {
+  margin-left: var(--space-md);
+}
+
+.tier-info-panel {
+  margin-top: var(--space-lg);
+  padding: var(--space-lg);
+  background: rgb(var(--color-bg-alt));
+  border: 1px solid rgb(var(--color-border) / 0.3);
+  border-radius: var(--radius-xl);
+  animation: slide-down var(--duration-normal) var(--ease-out);
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tier-info-panel h4 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: rgb(var(--color-text));
+  margin-bottom: var(--space-md);
+}
+
+.tier-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-md);
+}
+
+.tier-info-card {
+  padding: var(--space-md);
+  background: rgb(var(--color-bg));
+  border: 1px solid rgb(var(--color-border) / 0.3);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.tier-info-card.is-selected {
+  border-color: rgb(var(--color-accent));
+  box-shadow: 0 0 0 2px rgb(var(--color-accent) / 0.2);
+}
+
+.tier-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+
+.tier-info-name {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: rgb(var(--color-text));
+}
+
+.tier-info-choices {
+  font-size: var(--font-size-sm);
+  font-family: var(--font-mono);
+  color: rgb(var(--color-accent));
+  background: rgb(var(--color-accent) / 0.1);
+  padding: var(--space-3xs) var(--space-xs);
+  border-radius: var(--radius-full);
+}
+
+.tier-info-chance {
+  font-size: var(--font-size-sm);
+  color: rgb(var(--color-text-secondary));
+  margin: var(--space-xs) 0;
+}
+
+.tier-info-desc {
+  font-size: var(--font-size-sm);
+  color: rgb(var(--color-text-muted));
+  line-height: 1.5;
+  margin: 0;
+}

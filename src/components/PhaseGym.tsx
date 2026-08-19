@@ -14,7 +14,7 @@ import { ForcedChoiceSession } from './ForcedChoiceSession';
 import type { ForcedChoiceConfig } from '../features/exercises';
 import { choiceCountFor, configForPhase } from '../features/exercises';
 import type { Session, DifficultyTier } from '../types';
-import { TIER_ORDER, TIER_LABELS } from '../features/difficulty/tiers';
+import { TIER_ORDER, TIER_LABELS, choicesAtTier, chanceAtTier } from '../features/difficulty/tiers';
 
 interface PhaseGymProps {
   profileId: string;
@@ -34,6 +34,25 @@ export const PHASE_TITLES: Record<number, string> = {
   7: 'Phase 7: Text Reading',
 };
 
+/** Build tier info for a specific config. */
+function getTierInfo(config: ForcedChoiceConfig) {
+  return TIER_ORDER.map((tier) => {
+    const choices = choicesAtTier(tier, config.choicesPerRound, config.options.length);
+    const chance = chanceAtTier(tier, config.choicesPerRound, config.options.length);
+    return {
+      tier,
+      label: TIER_LABELS[tier],
+      choices,
+      chancePct: Math.round(chance * 100),
+      description: tier === 'beginner'
+        ? `Easiest — only ${choices} options shown. Chance = ${Math.round(chance * 100)}%.`
+        : tier === 'expert'
+        ? `Hardest — all ${choices} options shown. Chance = ${Math.round(chance * 100)}%.`
+        : `${choices} options shown. Chance = ${Math.round(chance * 100)}%.`,
+    };
+  });
+}
+
 export function PhaseGym({
   profileId,
   phaseId,
@@ -46,6 +65,7 @@ export function PhaseGym({
     drills ?? [configForPhase(phaseId as 1 | 2 | 3 | 4)];
   const [activeCfg, setActiveCfg] = useState<ForcedChoiceConfig | null>(null);
   const [tier, setTier] = useState<DifficultyTier>('beginner');
+  const [showTierInfo, setShowTierInfo] = useState(false);
 
   const configs = useMemo(
     () => available.filter((c) => c.phaseId === phaseId),
@@ -63,6 +83,10 @@ export function PhaseGym({
     }
   };
 
+  // Use the first config to show tier info (they all have same pool size for a given phase)
+  const currentConfig = configs[0] ?? configForPhase(phaseId as 1 | 2 | 3 | 4);
+  const tierInfos = getTierInfo(currentConfig);
+
   return (
     <section className="phase-gym" aria-label={PHASE_TITLES[phaseId] ?? `Phase ${phaseId}`}>
       <header className="phase-gym-header">
@@ -76,6 +100,14 @@ export function PhaseGym({
       {/* Difficulty tier selector */}
       <div className="tier-selector" role="group" aria-label="Difficulty tier">
         <span className="tier-label">Difficulty:</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="tier-info-toggle"
+          onClick={() => setShowTierInfo(!showTierInfo)}
+        >
+          {showTierInfo ? 'Hide tier details' : 'Show what each tier means'}
+        </Button>
         {TIER_ORDER.map((t) => (
           <button
             key={t}
@@ -83,11 +115,33 @@ export function PhaseGym({
             className={`tier-btn${tier === t ? ' is-active' : ''}`}
             onClick={() => setTier(t)}
             disabled={activeCfg !== null}
+            title={tierInfos.find(ti => ti.tier === t)?.description}
           >
             {TIER_LABELS[t]}
           </button>
         ))}
       </div>
+
+      {showTierInfo && (
+        <div className="tier-info-panel" role="region" aria-label="Difficulty tier details">
+          <h4>What each difficulty tier means for this exercise:</h4>
+          <div className="tier-info-grid">
+            {tierInfos.map((info) => (
+              <div
+                key={info.tier}
+                className={`tier-info-card${info.tier === tier ? ' is-selected' : ''}`}
+              >
+                <div className="tier-info-header">
+                  <span className="tier-info-name">{info.label}</span>
+                  <span className="tier-info-choices">{info.choices} options</span>
+                </div>
+                <p className="tier-info-chance">Chance baseline: {info.chancePct}%</p>
+                <p className="tier-info-desc">{info.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {activeCfg ? (
         <ForcedChoiceSession
@@ -107,8 +161,7 @@ export function PhaseGym({
             <Card asArticle key={cfg.exerciseType} className="drill-card" interactive>
               <h3>{cfg.exerciseType}</h3>
               <p>
-                {cfg.roundsPerSession} rounds • {choiceCountFor(cfg.exerciseType)}{' '}
-                choices • chance {Math.round(cfg.chanceBaseline * 100)}%
+                {cfg.roundsPerSession} rounds • {choiceCountFor(cfg.exerciseType)} choices • chance {Math.round(cfg.chanceBaseline * 100)}%
               </p>
               <Button variant="primary" onClick={() => setActiveCfg(cfg)}>
                 Train
