@@ -22,7 +22,7 @@ import { ForcedChoiceEngine } from '../features/exercises';
 import type { Session, ExerciseRound, DifficultyTier } from '../types';
 
 /** Renders a visual representation of the target based on its meta data. */
-function VisualTarget({ meta }: { meta: Record<string, unknown> }): ReactElement {
+export function VisualTarget({ meta }: { meta: Record<string, unknown> }): ReactElement {
   const type = meta.type as string | undefined;
   const value = meta.value as string | undefined;
 
@@ -44,7 +44,7 @@ function VisualTarget({ meta }: { meta: Record<string, unknown> }): ReactElement
 }
 
 /** Renders an SVG icon for a shape. */
-function ShapeIcon({ shape, className }: { shape: string; className?: string }): ReactElement {
+export function ShapeIcon({ shape, className }: { shape: string; className?: string }): ReactElement {
   const size = 120;
   const center = size / 2;
   const radius = size * 0.35;

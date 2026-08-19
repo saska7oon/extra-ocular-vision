@@ -3,7 +3,7 @@
  * Features step-by-step presentation with animations, diagrams, and interactive demos.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { ReactElement } from 'react';
 import { Button, Card } from '../ui';
 import {
@@ -12,7 +12,7 @@ import {
   getTutorialCategory,
   getTutorialSection,
 } from '../features/tutorials';
-import { ForcedChoiceSession } from './ForcedChoiceSession';
+import { ForcedChoiceSession, VisualTarget } from './ForcedChoiceSession';
 import { BreathingGuide } from './BreathingGuide';
 import { BinauralPlayer } from './BinauralPlayer';
 import { FORCED_CHOICE_CONFIGS } from '../features/exercises';
@@ -389,46 +389,205 @@ function VisualAid({ type, slide }: { type: TutorialSlide['visual']; slide: Tuto
     case 'animation':
       return (
         <div className="visual-animation" aria-label="Animated demonstration">
-          <div className="animation-placeholder">
-            <span className="animation-icon">🎬</span>
-            <p>Animated demonstration: {slide.title}</p>
-            <p className="animation-hint">[Animation would play here in production]</p>
+          <div className="animation-demo">
+            <div className="animation-frame">
+              <BreathingAnimation />
+              <BinauralAnimation />
+              <VeilAnimation />
+            </div>
+            <p className="animation-caption">Animated demonstration: {slide.title}</p>
           </div>
         </div>
       );
     case 'diagram':
       return (
         <div className="visual-diagram" aria-label="Diagram">
-          <div className="diagram-placeholder">
-            <span className="diagram-icon">📊</span>
-            <p>Diagram: {slide.title}</p>
-            <p className="diagram-hint">[Interactive diagram would render here]</p>
+          <div className="diagram-container">
+            <InteractiveDiagram slide={slide} />
           </div>
         </div>
       );
     case 'video':
       return (
         <div className="visual-video" aria-label="Video demonstration">
-          <div className="video-placeholder">
-            <span className="video-icon">📹</span>
-            <p>Video: {slide.title}</p>
-            <p className="video-hint">[Video would play here]</p>
+          <div className="video-container">
+            <VideoPlayer slide={slide} />
           </div>
         </div>
       );
     case 'interactive':
       return (
         <div className="visual-interactive" aria-label="Interactive element">
-          <div className="interactive-placeholder">
-            <span className="interactive-icon">🎮</span>
-            <p>Interactive: {slide.title}</p>
-            <p className="interactive-hint">[Interactive element would render here]</p>
+          <div className="interactive-container">
+            <InteractiveElement slide={slide} />
           </div>
         </div>
       );
     default:
       return <div className="visual-unknown" aria-label="Unknown visual type">Unknown visual type</div>;
   }
+}
+
+// Visual aid animation components
+
+function BreathingAnimation(): ReactElement {
+  const [phase, setPhase] = useState<'inhale' | 'hold' | 'exhale'>('inhale');
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const cycle = () => {
+      // Inhale 5s
+      setPhase('inhale');
+      setProgress(0);
+      const inhaleInterval = setInterval(() => setProgress(p => p + 2), 100);
+      setTimeout(() => {
+        clearInterval(inhaleInterval);
+        // Hold 1s
+        setPhase('hold');
+        setProgress(0);
+        setTimeout(() => {
+          // Exhale 5s
+          setPhase('exhale');
+          setProgress(0);
+          const exhaleInterval = setInterval(() => setProgress(p => p + 2), 100);
+          setTimeout(() => {
+            clearInterval(exhaleInterval);
+            cycle();
+          }, 5000);
+        }, 1000);
+      }, 5000);
+      return () => clearInterval(inhaleInterval);
+    };
+    cycle();
+  }, []);
+
+  const colors = {
+    inhale: 'rgb(var(--color-accent))',
+    hold: 'rgb(var(--color-warning))',
+    exhale: 'rgb(var(--color-success))',
+  };
+
+  return (
+    <div className="breathing-animation" role="img" aria-label="Breathing cycle animation">
+      <div
+        className="breathing-circle"
+        style={{
+          background: colors[phase],
+          transform: `scale(${0.5 + progress / 200})`,
+          boxShadow: `0 0 ${20 + progress / 5}px ${colors[phase]}`,
+        }}
+      />
+      <p className="breathing-label">{phase.charAt(0).toUpperCase() + phase.slice(1)}</p>
+    </div>
+  );
+}
+
+function BinauralAnimation(): ReactElement {
+  const [waves, setWaves] = useState<Array<{ id: number; phase: number }>>([]);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setWaves(w => {
+        const next = w.map(wave => ({ ...wave, phase: (wave.phase + 0.1) % (Math.PI * 2) }));
+        if (next.length < 8) next.push({ id: Date.now(), phase: 0 });
+        return next.slice(-8);
+      });
+    }, 150);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="binaural-animation" role="img" aria-label="Binaural beats wave animation">
+      {waves.map(wave => (
+        <div
+          key={wave.id}
+          className="binaural-wave"
+          style={{
+            transform: `translateX(${Math.sin(wave.phase) * 20}px)`,
+            opacity: 0.3 + Math.abs(Math.sin(wave.phase)) * 0.7,
+          }}
+        >
+          <div className="wave-left" />
+          <div className="wave-center" />
+          <div className="wave-right" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function VeilAnimation(): ReactElement {
+  const [state, setState] = useState<'lowered' | 'lifting' | 'raised'>('lowered');
+
+  useEffect(() => {
+    const cycle = () => {
+      setState('lowered');
+      setTimeout(() => setState('lifting'), 3000);
+      setTimeout(() => setState('raised'), 4000);
+      setTimeout(() => cycle(), 7000);
+    };
+    cycle();
+  }, []);
+
+  return (
+    <div className="veil-animation" role="img" aria-label="Veil lifting animation">
+      <div className={`veil-fabric ${state}`} />
+      <div className="veil-target">
+        <VisualTarget meta={{ type: 'color', value: '#ff4444' }} />
+      </div>
+      <p className="veil-state">{state === 'lowered' ? 'Perceiving...' : state === 'lifting' ? 'Revealing...' : 'Revealed!'}</p>
+    </div>
+  );
+}
+
+function InteractiveDiagram({ slide }: { slide: TutorialSlide }): ReactElement {
+  return (
+    <div className="interactive-diagram">
+      <p className="diagram-title">{slide.title}</p>
+      <div className="diagram-content">
+        <p>Interactive diagram for: {slide.title}</p>
+        <div className="diagram-placeholder-svg">
+          <svg viewBox="0 0 400 200" className="diagram-svg">
+            <rect x="50" y="50" width="100" height="100" rx="10" fill="rgb(var(--color-accent) / 0.2)" stroke="rgb(var(--color-accent))" strokeWidth="2" />
+            <circle cx="250" cy="100" r="50" fill="rgb(var(--color-success) / 0.2)" stroke="rgb(var(--color-success))" strokeWidth="2" />
+            <polygon points="350,50 400,150 300,150" fill="rgb(var(--color-warning) / 0.2)" stroke="rgb(var(--color-warning))" strokeWidth="2" />
+            <text x="50" y="30" fill="rgb(var(--color-text-muted))" fontFamily="var(--font-mono)" fontSize="12">Shape Discrimination</text>
+            <text x="250" y="30" fill="rgb(var(--color-text-muted))" fontFamily="var(--font-mono)" fontSize="12">Center Pulling</text>
+            <text x="350" y="30" fill="rgb(var(--color-text-muted))" fontFamily="var(--font-mono)" fontSize="12">Edge Sensing</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VideoPlayer({ slide }: { slide: TutorialSlide }): ReactElement {
+  return (
+    <div className="video-player" role="region" aria-label="Video player">
+      <div className="video-frame">
+        <div className="video-placeholder-content">
+          <svg className="play-button" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="45" fill="rgb(var(--color-accent) / 0.3)" stroke="rgb(var(--color-accent))" strokeWidth="2" />
+            <polygon points="40,35 40,65 70,50" fill="rgb(var(--color-accent))" />
+          </svg>
+          <p>Video: {slide.title}</p>
+          <p className="video-meta">Click to play (placeholder)</p>
+        </div>
+      </div>
+      <p className="video-caption">{slide.title}</p>
+    </div>
+  );
+}
+
+function InteractiveElement({ slide }: { slide: TutorialSlide }): ReactElement {
+  return (
+    <div className="interactive-element">
+      <p className="interactive-title">{slide.title}</p>
+      <div className="interactive-demo">
+        <ConfidenceCalibrationDemo />
+      </div>
+    </div>
+  );
 }
 
 // Veil demo component for tutorial
