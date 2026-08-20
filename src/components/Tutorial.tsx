@@ -529,7 +529,7 @@ export function Tutorial({
 }
 
 // Visual aid component
-function VisualAid({ type, slide }: { type: TutorialSlide['visual']; slide: TutorialSlide }): ReactElement {
+function VisualAid({ type: _type, slide }: { type: TutorialSlide['visual']; slide: TutorialSlide }): ReactElement {
   // Determine which specific animation to show based on slide content
   const getAnimationForSlide = (slide: TutorialSlide) => {
     const title = slide.title.toLowerCase();
@@ -577,45 +577,62 @@ function VisualAid({ type, slide }: { type: TutorialSlide['visual']; slide: Tuto
     return <VeilAnimation />;
   };
 
-  switch (type) {
-    case 'animation':
-      return (
-        <div className="visual-animation" aria-label="Animated demonstration">
-          <div className="animation-demo">
-            <div className="animation-frame">
-              {getAnimationForSlide(slide)}
+  // First, check if the slide has a specific visual type assigned
+  // This overrides the automatic keyword matching
+  if (slide.visual) {
+    switch (slide.visual) {
+      case 'animation':
+        return (
+          <div className="visual-animation" aria-label="Animated demonstration">
+            <div className="animation-demo">
+              <div className="animation-frame">
+                {getAnimationForSlide(slide)}
+              </div>
+              <p className="animation-caption">{slide.title}</p>
             </div>
-            <p className="animation-caption">{slide.title}</p>
           </div>
-        </div>
-      );
-    case 'diagram':
-      return (
-        <div className="visual-diagram" aria-label="Diagram">
-          <div className="diagram-container">
-            <InteractiveDiagram slide={slide} />
+        );
+      case 'diagram':
+        return (
+          <div className="visual-diagram" aria-label="Diagram">
+            <div className="diagram-container">
+              <InteractiveDiagram slide={slide} />
+            </div>
           </div>
-        </div>
-      );
-    case 'video':
-      return (
-        <div className="visual-video" aria-label="Video demonstration">
-          <div className="video-container">
-            <VideoPlayer slide={slide} />
+        );
+      case 'video':
+        return (
+          <div className="visual-video" aria-label="Video demonstration">
+            <div className="video-container">
+              <VideoPlayer slide={slide} />
+            </div>
           </div>
-        </div>
-      );
-    case 'interactive':
-      return (
-        <div className="visual-interactive" aria-label="Interactive element">
-          <div className="interactive-container">
-            <InteractiveElement slide={slide} />
+        );
+      case 'interactive':
+        return (
+          <div className="visual-interactive" aria-label="Interactive element">
+            <div className="interactive-container">
+              <InteractiveElement slide={slide} />
+            </div>
           </div>
-        </div>
-      );
-    default:
-      return <div className="visual-unknown" aria-label="Unknown visual type">Unknown visual type</div>;
+        );
+      default:
+        return <div className="visual-unknown" aria-label="Unknown visual type">Unknown visual type</div>;
+    }
   }
+
+  // Fallback: determine animation based on slide content keywords
+  const animation = getAnimationForSlide(slide);
+  return (
+    <div className="visual-animation" aria-label="Animated demonstration">
+      <div className="animation-demo">
+        <div className="animation-frame">
+          {animation}
+        </div>
+        <p className="animation-caption">{slide.title}</p>
+      </div>
+    </div>
+  );
 }
 
 // Visual aid animation components
